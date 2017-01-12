@@ -12,8 +12,9 @@ class data:
 
 	def read_data(self, data_path, stem_dict_path):
 		#
-		stem_dict_raw = list(csv.reader(open(stem_dict_path), delimiter = '\t'))[1:]
+		stem_dict_raw = list(csv.reader(open(stem_dict_path), delimiter = ','))[1:]
 		stem_dict = { (int(l[0]), l[1]) : l[2] for l in stem_dict_raw }
+		print(sorted(stem_dict.keys()))
 		#
 		self.token_index = []
 		self.ontological = []
@@ -36,8 +37,10 @@ class data:
 			self.utterance.append(d[4])
 			self.data.append([])
 			for li in range(30):
-				try : stem = stem_dict[(li,d[li+5])]
-				except KeyError: stem = d[li+5]
+				try : 
+					stem = stem_dict[(li,d[li+5])]
+				except KeyError: 
+					stem = d[li+5]
 				if 'SPLIT' in self.parameters:
 					self.data[-1].append([t for t in re.split(' ', stem) if t != ''])
 				else: self.data[-1].append([stem])
@@ -84,7 +87,7 @@ class data:
 		with open('%s_gold.csv' % (fb), 'w') as fh:
 			fh.write('gold\n%s' % '\n'.join(self.annotation[oix]))
 		with open('%s_situations.csv' % (fb),'w') as fh:
-			fh.write('utterance,word\n%s' % '\n'.join('%d,%d' % c for c in self.token_index[oix]))
+			fh.write('utterance,word\n%s' % '\n'.join('%d,%d' % (c[0],c[1]) for c in self.token_index[oix]))
 
 	def create_graph_inference_objects(self, 
 			representation_level = 'exemplar',

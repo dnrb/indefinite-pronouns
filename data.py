@@ -2,6 +2,7 @@ import csv
 import re
 import numpy as np
 from scipy.sparse import csr_matrix
+from collections import Counter
 
 class data:
 
@@ -60,7 +61,7 @@ class data:
 		lg_ixx = [[] for i in range(30)]
 		for k,v in term_dict.items():
 			lg_ixx[k[0]].append(v)
-		M = np.zeros((oix.shape[0],len(terms)), dtype = 'int') + 6
+		M = np.zeros((oix[0].shape[0],len(terms)), dtype = 'int') + 6
         #
 		for di,d in enumerate(self.data[oix]):
 			if self.ontological[di] != onto_cat: continue
@@ -85,5 +86,20 @@ class data:
 		with open('%s_gold.csv' % (fb), 'w') as fh:
 			fh.write('gold\n%s' % '\n'.join(self.annotation[oix]))
 
-	def create_graph_inference_objects(self, frequency_cutoff = 1):
+	def create_graph_inference_objects(self, 
+			representation_level = 'exemplar',
+			frequency_cutoff = 1):
+		function_dictionary = { k : v for v,k in enumerate(sorted(set(self.annotation))) }
+		if representation_level == 'exemplar':
+			representation_dict = { k : k for k in range(len(self.data)) }
+		elif representation_level == 'function':
+			representation_dict = { k : function_dictionary[f] for k,f in enumerate(self.annotation) }
+		all_terms = [(li,w) for d in self.data
+					 for li,dl in enumerate(d) for w in dl]
+		term_count = Counter(all_terms)
+		selected_terms = sorted(t for t in set(all_terms) if term_count[t] > frequency_cutoff)
+		#
+		for t in selected_terms:
+			situations = [representation_dict[i] for i,s in enumerate(self.data) if t[1] in s[t[0]]]
+			print(t,situations)
 		return

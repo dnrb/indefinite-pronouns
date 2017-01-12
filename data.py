@@ -45,12 +45,12 @@ class data:
 		self.ontological = np.array(self.ontological)
 		self.annotation = np.array(self.annotation)
 		self.data = np.array(self.data)
+		self.token_index = np.array(self.token_index)
 		return
 
 	def create_oc_mds_files(self, onto_cat = 'thing'):
 		# frequency cut off is done in OC script
 		oix = np.where(self.ontological == onto_cat)
-		print(oix)
 		terms = set([(li,w) for d in self.data[oix]
 					 for li,dl in enumerate(d) for w in dl])
 		#term_count = Counter(all_terms)
@@ -64,13 +64,11 @@ class data:
 		M = np.zeros((oix[0].shape[0],len(terms)), dtype = 'int') + 6
         #
 		for di,d in enumerate(self.data[oix]):
-			if self.ontological[di] != onto_cat: continue
 			M[di,[term_dict[(ti,tt)] for ti,t in enumerate(d) for tt in t]] = 1
 			for ti,t in enumerate(d):
 				if len(t) == 0: 
 					M[di,lg_ixx[ti]] = 9
-		#
-		print(M.shape)
+		
 		fb = '%s_%s' % (onto_cat, '_'.join(sorted(self.parameters)))
 		with open('%s.csv' % fb, 'w') as fh:
 			fh.write('sit,%s\n' % 
@@ -85,6 +83,8 @@ class data:
 				fh.write('%d,%s\n' % (i,','.join(' '.join(e) for e in d)))
 		with open('%s_gold.csv' % (fb), 'w') as fh:
 			fh.write('gold\n%s' % '\n'.join(self.annotation[oix]))
+		with open('%s_situations.csv' % (fb),'w') as fh:
+			fh.write('utterance,word\n%s' % '\n'.join('%d,%d' % c for c in self.token_index[oix]))
 
 	def create_graph_inference_objects(self, 
 			representation_level = 'exemplar',
@@ -100,6 +100,7 @@ class data:
 		selected_terms = sorted(t for t in set(all_terms) if term_count[t] > frequency_cutoff)
 		#
 		for t in selected_terms:
-			situations = [representation_dict[i] for i,s in enumerate(self.data) if t[1] in s[t[0]]]
+			situations = sorted(set([representation_dict[i] for i,s in 
+									enumerate(self.data) if t[1] in s[t[0]]]))
 			print(t,situations)
 		return

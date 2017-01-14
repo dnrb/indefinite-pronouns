@@ -3,6 +3,7 @@ import re
 import numpy as np
 from scipy.sparse import csr_matrix
 from collections import Counter
+import networkx as nx
 
 class data:
 
@@ -30,6 +31,8 @@ class data:
 			elif 'IQ' in self.parameters and 'iq' in secondary:
 				d[2] = 'QU'
 			if not 'Q2' in self.parameters and 'q2' in secondary:
+				continue
+			if not 'noUF' in parameters and d[3] == 'UF':
 				continue
 			self.token_index.append(tuple([int(d[0]),int(d[1])]))
 			self.ontological.append(d[2])
@@ -89,7 +92,7 @@ class data:
 		with open('%s_situations.csv' % (fb),'w') as fh:
 			fh.write('utterance,word\n%s' % '\n'.join('%d,%d' % (c[0],c[1]) for c in self.token_index[oix]))
 
-	def create_graph_inference_objects(self, 
+	def create_graph_inference_objects(self,
 			representation_level = 'exemplar',
 			frequency_cutoff = 1):
 		function_dictionary = { k : v for v,k in enumerate(sorted(set(self.annotation))) }
@@ -100,10 +103,33 @@ class data:
 		all_terms = [(li,w) for d in self.data
 					 for li,dl in enumerate(d) for w in dl]
 		term_count = Counter(all_terms)
-		selected_terms = sorted(t for t in set(all_terms) if term_count[t] > frequency_cutoff)
-		#
+		selected_terms = sorted(t for t in set(all_terms) if term_count[t] > frequency_cutoff and t[1] != '')
+
+		self.sense_names = list(set(representation_dict.values()))
+		self.sense_names.sort()
+		symbols = list(range(len(self.sense_names)))
+		self.senses = []  # list of subgraphs for each
+
+		# add subgraph for each langauge-marker 
 		for t in selected_terms:
-			situations = sorted(set([representation_dict[i] for i,s in 
+			situations = sorted(set([representation_dict[i] for i,s in
 									enumerate(self.data) if t[1] in s[t[0]]]))
-			print(t,situations)
+			L = t[0]
+			N = t[1]
+			T = situations
+			new_g = nx.Graph(language = L, term = N)
+			self.senses.append(new_g)
+			self.senses[-1].add_nodes_from(T)
+
+		# construct G
+		self.G = nx.Graph()
+		for i in symbols:
+			if representation_level == 'exemplar':
+				for i in symbols:
+					self.G.add_node(i, hasp_type=self.annotation[i], referent_type=self.ontological[i])
+			else:    # representation_level == 'function'
+				for i in symbols:
+					self.G.add_node(i, hasp_type=self.sense_names[i])
+		self.languages = set([g.graph['language'] for g in self.senses])
+		self.n_S = self.G.number_of_nodes()
 		return

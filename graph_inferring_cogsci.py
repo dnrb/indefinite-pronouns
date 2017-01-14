@@ -1,9 +1,8 @@
 import networkx as nx
 import csv
-from collections import defaultdict as dd, Counter
 import numpy as np
-from scipy.special import binom
 from itertools import combinations
+from data import data
 
 class greedy_best_first:
     """
@@ -93,114 +92,6 @@ class angluin(greedy_best_first):
         return i < j and len(self.cooccurrence[i][j]) > 0
 
 
-class dataset:
-    """
-    Represents a dataset stored in regier 3-header format.
-
-    === Attributes ===
-    senses: list of networkx graphs -- each graph is a subgraph of G containing
-                the set of nodes associated with a marker and langauge. The
-                marker and language of a subgraph sg in senses can be accessed
-                through sg.graph['language'] and sg.graph['term']
-    sense_names: list of str -- stores the names of the senses associated with
-                each node; the sense_name of a node in G with id i
-                can be found in sense_names[i]
-    G: networkx graph -- graph with nodes from input file; initialized with no edges
-    n_S: int -- number of nodes in G
-    """
-
-    def __init__(self, fname, category_level = 'function',
-                low_freq_threshold = 5, leave_out_uf = True,
-                valid_ref_types = ['thing', 'body', 'one']):
-        """
-        fname: str -- filename with data in exemplar Regier format (note that
-                    there should be 3 headers: the first with referent types,
-                    (in this case 'one', 'thing', and 'body'), the second with
-                     Haspelmath functions and the third with exemplar codes
-                    in the format "line-wordIndex").
-        category_level: str -- in {'function', 'exemplar'}; tells whether to
-                    use the exemplar codes as sense or to use the Haspelath
-                    functions in the second header to group the exemplars
-                    into senses.
-        low_freq_threshold: int -- must be >= 0. Markers with fewer than this
-                    number of occurrences are filtered out.
-        """
-
-        lines = csv.reader(open(fname))
-
-        self.senses = []
-        self.sense_names = []
-        symbols = []
-
-        # read in headers
-        ref_types = next(lines)[2:]
-        functions = next(lines)[2:]
-        ids = next(lines)[2:]
-
-        # filter out UF cases and cases where the referent type is not valid
-        cols_to_avoid = []
-        updated_functions = []
-        updated_ids = []
-        updated_ref_types = []
-        for j, func in enumerate(functions):
-            if leave_out_uf and func == "UF":
-                cols_to_avoid.append(j)
-            elif ref_types[j] not in valid_ref_types:
-                cols_to_avoid.append(j)
-            else:
-                updated_ids.append(ids[j])
-                updated_ref_types.append(ref_types[j])
-                updated_functions.append(func)
-        functions = updated_functions
-        ids = updated_ids
-        ref_types = updated_ref_types
-
-        # initialize sense_names and symbols
-        if category_level == "exemplar":
-            symbols = list(range(len(ids)))
-            self.sense_names = ids
-        else:    # category_level == "function"
-            self.sense_names = list(set(functions))
-            symbols = list(range(len(self.sense_names)))
-
-        # read in the situation-langauge matrix and filter out UF cases
-        lines_matrix = []
-        for line in lines:
-            curr_col = line[:2]
-            line = line[2:]
-            for i in range(len(line)):
-                if i not in cols_to_avoid:
-                    curr_col.append(line[i])
-            lines_matrix.append(curr_col)
-
-        # add a subgraph for each langage-marker pair to SG
-        for line in lines_matrix:
-            if not '1' in line: continue
-            elif sum([eval(x) for x in line[2:]]) < low_freq_threshold:
-                continue
-            L = line[0]
-            N = line[1]
-            if category_level == "exemplar":
-                T = [symbols[c-2] for c in range(2,len(line)) if line[c] == '1']
-            else:    # category_level == "function"
-                T = list(set([self.sense_names.index(functions[c - 2]) for c in range(2, len(line)) if line[c] == '1']))
-            new_g = nx.Graph(language = L, term = N)
-            self.senses.append(new_g)
-            self.senses[-1].add_nodes_from(T)
-
-        # initialize attributes
-        self.G = nx.Graph()
-        if category_level == "exemplar":
-            for i in symbols:
-                self.G.add_node(i, referent_type=ref_types[i], line_id=ids[i],
-                hasp_type=functions[i])
-        else:    # category_level == "function"
-            for i in symbols:
-                self.G.add_node(i, hasp_type=self.sense_names[i])
-        self.languages = set([g.graph['language'] for g in self.senses])
-        self.n_S = self.G.number_of_nodes()
-        return
-
 class experiment:
     """
     This class runs experiments for inferring and evaluating graphs.
@@ -209,13 +100,19 @@ class experiment:
     file name: str -- path to the file containing data
     """
 
-    def __init__(self, file_name):
+    def __init__(self, params):
         """
         file_name: str -- path to file containing data for graph construction
 
         Constructs an experiment object with attribute file_name.
         """
-        self.file_name = file_name
+        self.params = params
+        self.data_path = params['dataset']
+        self.stem_dict_path = params['stem dict']
+        self.dataset = data(self.data_path, self.stem_dict_path, self.params)
+        self.dataset.create_graph_inference_objects(
+            representation_level = params['category level'],
+            frequency_cutoff = params['low freq threshold'])
 
     def infer_graph(self, category_level = "function", algorithm = angluin,
                     low_freq_threshold = 5, leave_out_uf = True,
@@ -232,11 +129,7 @@ class experiment:
         Infers a graph based on category_level, algorithm, and
         low_freq_threshold.
         """
-        self.dataset = dataset(self.file_name, category_level = category_level,
-            low_freq_threshold = low_freq_threshold, leave_out_uf = leave_out_uf,
-            valid_ref_types = valid_ref_types)
         a = algorithm(self.dataset)
-
         return a.G, a.SG
         # returns the inferred graph and the inferred subgraphs
 
@@ -258,10 +151,6 @@ class experiment:
         Prints an evaluation of a graph with edges gold_standard_edges based
         on algorithm and self.dataset.
         """
-
-        # initialize dataset
-        self.dataset = dataset(self.file_name, category_level = category_level,
-            low_freq_threshold = low_freq_threshold)
 
         # convert gold_standard_edges to ints (indices in self.sense_names)
         gold_standard_edges_ints = []
@@ -347,7 +236,7 @@ class file_formatter():
         # write labels to label_path
         with open(label_path, "w") as label_file:
             for i, n in enumerate(G.nodes()):
-                label_file.write(str(n + 1) + "," + labels[i] +"\n")
+                label_file.write(str(n + 1) + "," + str(labels[i]) +"\n")
 
 
     def get_labels(self, G, label_type, referent_type_dict):
@@ -376,81 +265,7 @@ class file_formatter():
                 ref_lab = referent_type_dict[ref_type]
                 hasp_lab = G.node[node]['hasp_type']
                 labels.append(hasp_lab + "," + ref_lab)
-
-
-        #if label_type == "referent type":
-            #labels = [referent_type_dict[ref_type] for ref_type in referent_types]
-        #else:    # label_type == 'sense'
-            #labels = next(lines)[2:]
-
         return labels
-
-
-    def convert_to_3_header_regier_format(self, input_path, output_path,
-        hasp_type_params = []):
-        """
-        input_path: str -- path to a file in situation-language format
-        output_path: str -- path
-        ref_type_params: list -- can contain "+IQ", "+Q2", and "+PRED"; the last column
-                            of the file at the input path contains "IQ", "Q2," and "PRED"
-                            terms, or a combination separated by semicolons; these behave
-                            as follows:
-                                "+Q2": include Q2 cases in the analysis (default is to leave them out)
-                                "+IQ": mark IQ cases as QU
-                                "PRED": treat PRED as its own category
-
-        Writes the data in input_path to output_path in 3-header regier format.
-        """
-
-        # read in input file
-        input_file = open(input_path)
-        lines = csv.reader(input_file, delimiter="\t") #used to be no specified delimiter-- default to comma
-        sit_lang_matrix = []
-        referent_types = []
-        exemplar_ids = []
-        hasp_types = []
-
-        for line in lines:
-
-            if "+Q2" not in hasp_type_params and "Q2" in line[-1].split(";"):
-                continue
-            if "+IQ" in hasp_type_params and "IQ" in line[-1].split(";"):
-                hasp_types.append("QU")
-            elif "+PRED" in hasp_type_params and "PRED" in line[-1].split(";"):
-                hasp_types.append("PRED")
-            else:
-                hasp_types.append(line[3])
-            exemplar_ids.append(line[0] + "-" + line[1])
-            referent_types.append(line[2])
-            sit_lang_matrix.append(line[5:-1]) # used to be line[4:], but the 4th index now has the english sentence
-        input_file.close()
-
-        # find language-marker pairs
-        lang_to_markers = {}
-        for i in range(len(sit_lang_matrix[0])):
-            lang_to_markers[i] = set([sit[i] for sit in sit_lang_matrix])
-
-        # write headers to output
-        output_file = open(output_path, "w")
-        writer = csv.writer(output_file, delimiter=',')
-        writer.writerow(["", ""] + referent_types)
-        writer.writerow(["", ""] + hasp_types)
-        writer.writerow(["", ""] + exemplar_ids)
-
-        # write a line to output for each language-marker pair
-        for lang in lang_to_markers:
-            for m in lang_to_markers[lang]:
-                if m == "":
-                    continue
-                curr_row = [lang, m]
-                for sit in sit_lang_matrix:
-                    if sit[lang] == m:
-                        curr_row.append(1)
-                    else:
-                        curr_row.append(0)
-                writer.writerow(curr_row)
-
-        output_file.close()
 
 
     def read_edges(self, edge_file):
@@ -474,7 +289,7 @@ def graph_inferring_experiment(params):
     Infer a graph based on params.
     """
     # infer a graph
-    e = experiment(params['dataset'])
+    e = experiment(params)
     G, SG = e.infer_graph(category_level = params['category level'],
         algorithm = eval(params['algorithm']),
         low_freq_threshold = params['low freq threshold'],
@@ -507,7 +322,7 @@ def graph_evaluating_experiment(params):
     gold_standard_edges = file_formatter().read_edges(params['gold standard graph'])
 
     # run a graph evaluating experiment (prints output)
-    e = experiment(params['dataset'])
+    e = experiment(params)
     e.evaluate_graph(gold_standard_edges,
         category_level = params['category level'],
         algorithm = eval(params['algorithm']),
@@ -545,43 +360,7 @@ def get_files_for_all_ref_type_params(input_dir, input_file, output_dir):
 
 
 if __name__ == "__main__":
-
-    import os
-    from parameters import params
-
-    output_dir = '/home/julia/Documents/research_winter_2017/graph_inferring_output/labels_and_edges/'
-    input_dir = "/home/julia/Documents/research_winter_2017/dev_set_files/3_header_reg_format_dev_set/"
-
-    for file_path in os.listdir(input_dir):
-
-        file_path = input_dir + file_path
-
-        for cat_lev in ['function', 'exemplar']:
-            for low_freq_thresh in [0, 5, 10]:
-
-                params['dataset'] = file_path
-                params['category level'] = cat_lev
-                params['low freq threshold'] = low_freq_thresh
-
-
-                file_name = file_path.split("/")[-1]
-                file_name = cat_lev + "_thresh" + str(low_freq_thresh) + "_" + file_name
-
-                edge_output = output_dir + "edges_" + file_name
-                label_output = output_dir + "labels_" + file_name
-
-                params['edges output'] = edge_output
-                params['label output'] = label_output
-
-                if os.path.isfile(edge_output):
-                    continue
-
-                graph_inferring_experiment(params)
-
-
-
-    # experiment template functions for graph inference and evaluation
-    #graph_inferring_experiment(params)
-    ##graph_evaluating_experiment(params)
+    from graph_parameters import params
+    graph_inferring_experiment(params)
 
 

@@ -1,7 +1,8 @@
 ### parameters for graph inferring ###
 
 params = {
-'dataset' : '/home/julia/Documents/research_winter_2017/dev_set_files/3_header_reg_format_dev_set/minus_IQ_minus_Q2_minus_PRED.csv',   # this should have 3 headers: referent type, haspelmath category, and exemplar ID
+'dataset' : 'data/dev_set.tsv',   # this should have 3 headers: referent type, haspelmath category, and exemplar ID
+'stem dict' : 'data/stemming_dictionary.csv',
 'category level' : 'function',   # in {'function', 'exemplar'}
 'algorithm' : 'angluin',
 'low freq threshold' : 5,	# markers with fewer than this number of occurrences are weeded out

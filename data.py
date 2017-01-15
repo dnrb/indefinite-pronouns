@@ -15,7 +15,6 @@ class data:
 		#
 		stem_dict_raw = list(csv.reader(open(stem_dict_path), delimiter = ','))[1:]
 		stem_dict = { (int(l[0]), l[1]) : l[2] for l in stem_dict_raw }
-		print(sorted(stem_dict.keys()))
 		#
 		self.token_index = []
 		self.ontological = []
@@ -23,10 +22,8 @@ class data:
 		self.utterance = []
 		#
 		data_raw = list(csv.reader(open(data_path), delimiter='\t'))[1:]
-		print(data_raw)
 		self.data = []
 		for di,d in enumerate(data_raw):
-			print(di,d)
 			if d[3] == 'excluded': continue
 			secondary = re.split(';',d[4])
 			annotation = d[2]
@@ -61,7 +58,6 @@ class data:
 		#
 		lg_ixx = [[] for i in range(30)]
 		for k,v in term_dict.items():
-			print(k,v)
 			lg_ixx[k[0]].append(v)
 		M = np.zeros((self.data.shape[0],len(terms)), dtype = 'int') + 6
 		#

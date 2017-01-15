@@ -82,7 +82,13 @@ class data:
 			fh.write('sit,%s\n' % ','.join('L%d' % li for li in range(30)))
 			for i,d in enumerate(self.data):
 				fh.write('%d,%s\n' % (i,','.join(' '.join(e) for e in d)))
-
+		with open('%s_gold.csv' % fb, 'w') as fh:
+			fh.write('utt,word,annotation,ontological\n')
+			for o,a,ix in zip(self.ontological,
+					  self.annotation,
+					  self.token_index):
+				fh.write('%d,%d,%s,%s\n' % (ix[0],ix[1],a,o))
+				
 	def create_graph_inference_objects(self,
 			representation_level = 'exemplar',
 			frequency_cutoff = 1):

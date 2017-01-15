@@ -32,7 +32,7 @@ class data:
 			if 'PR' in self.parameters and 'pred' in secondary: annotation = 'PRED'
 			elif 'IQ' in self.parameters and 'iq' in secondary: annotation = 'QU'
 			if not 'Q2' in self.parameters and 'q2' in secondary: continue
-			if not 'noUF' in self.parameters and d[3] == 'UF': continue
+			if 'noUF' in self.parameters and annotation == 'UF': continue
 			self.token_index.append((utt,wrd))
 			self.ontological.append(onto)
 			self.annotation.append(annotation)

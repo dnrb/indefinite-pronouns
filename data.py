@@ -23,27 +23,27 @@ class data:
 		self.utterance = []
 		#
 		data_raw = list(csv.reader(open(data_path), delimiter='\t'))[1:]
+		print(data_raw)
 		self.data = []
 		for di,d in enumerate(data_raw):
-			secondary = re.split(';',d[-1])
-			if 'PR' in self.parameters and 'pred' in secondary:
-				d[2] = 'PRED'
-			elif 'IQ' in self.parameters and 'iq' in secondary:
-				d[2] = 'QU'
-			if not 'Q2' in self.parameters and 'q2' in secondary:
-				continue
-			if not 'noUF' in self.parameters and d[3] == 'UF':
-				continue
-			self.token_index.append(tuple([int(d[0]),int(d[1])]))
-			self.ontological.append(d[2])
-			self.annotation.append(d[3])
-			self.utterance.append(d[4])
+			print(di,d)
+			if d[3] == 'excluded': continue
+			secondary = re.split(';',d[4])
+			annotation = d[2]
+			utt,wrd = int(d[0]),int(d[1])
+			onto = d[6]
+			if 'PR' in self.parameters and 'pred' in secondary: annotation = 'PRED'
+			elif 'IQ' in self.parameters and 'iq' in secondary: annotation = 'QU'
+			if not 'Q2' in self.parameters and 'q2' in secondary: continue
+			if not 'noUF' in self.parameters and d[3] == 'UF': continue
+			self.token_index.append((utt,wrd))
+			self.ontological.append(onto)
+			self.annotation.append(annotation)
+			self.utterance.append(d[5])
 			self.data.append([])
 			for li in range(30):
-				try : 
-					stem = stem_dict[(li,d[li+5])]
-				except KeyError: 
-					stem = d[li+5]
+				try : stem = stem_dict[(li,d[li+7])]
+				except KeyError: stem = d[li+7]
 				if 'SPLIT' in self.parameters:
 					self.data[-1].append([t for t in re.split(' ', stem) if t != ''])
 				else: self.data[-1].append([stem])
@@ -61,6 +61,7 @@ class data:
 		#
 		lg_ixx = [[] for i in range(30)]
 		for k,v in term_dict.items():
+			print(k,v)
 			lg_ixx[k[0]].append(v)
 		M = np.zeros((self.data.shape[0],len(terms)), dtype = 'int') + 6
 		#

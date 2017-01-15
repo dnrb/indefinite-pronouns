@@ -32,7 +32,7 @@ class data:
 				d[2] = 'QU'
 			if not 'Q2' in self.parameters and 'q2' in secondary:
 				continue
-			if not 'noUF' in parameters and d[3] == 'UF':
+			if not 'noUF' in self.parameters and d[3] == 'UF':
 				continue
 			self.token_index.append(tuple([int(d[0]),int(d[1])]))
 			self.ontological.append(d[2])
@@ -54,43 +54,34 @@ class data:
 		self.token_index = np.array(self.token_index)
 		return
 
-	def create_oc_mds_files(self, onto_cat = 'thing'):
+	def create_oc_mds_files(self):
 		# frequency cut off is done in OC script
-		oix = np.where(self.ontological == onto_cat)
-		terms = set([(li,w) for d in self.data[oix]
-					 for li,dl in enumerate(d) for w in dl])
-		#term_count = Counter(all_terms)
-		#th_freq = self.parameters['frequency threshold']
-		#sel_terms = sorted(t for t in set(all_terms) if term_count[t] > th_freq)
+		terms = set([(li,w) for d in self.data for li,dl in enumerate(d) for w in dl])
 		term_dict = { k : v for v,k in enumerate(sorted(terms)) }
 		#
 		lg_ixx = [[] for i in range(30)]
 		for k,v in term_dict.items():
 			lg_ixx[k[0]].append(v)
-		M = np.zeros((oix[0].shape[0],len(terms)), dtype = 'int') + 6
-        #
-		for di,d in enumerate(self.data[oix]):
+		M = np.zeros((self.data.shape[0],len(terms)), dtype = 'int') + 6
+		#
+		for di,d in enumerate(self.data):
 			M[di,[term_dict[(ti,tt)] for ti,t in enumerate(d) for tt in t]] = 1
 			for ti,t in enumerate(d):
 				if len(t) == 0: 
 					M[di,lg_ixx[ti]] = 9
-		
-		fb = '%s_%s' % (onto_cat, '_'.join(sorted(self.parameters)))
+		#
+		fb = 'oc_%s' % ('_'.join(sorted(self.parameters)))
 		with open('%s.csv' % fb, 'w') as fh:
 			fh.write('sit,%s\n' % 
 					 ','.join('%d:%s' % k for k in 
 						sorted(term_dict, key = lambda k : term_dict[k])))
 			for i,r in enumerate(M):
 				fh.write('%d,%s\n' % (i,','.join([str(c) for c in r])))
-        #
+				#
 		with open('%s_labels.csv' % fb, 'w') as fh:
 			fh.write('sit,%s\n' % ','.join('L%d' % li for li in range(30)))
-			for i,d in enumerate(self.data[oix]):
+			for i,d in enumerate(self.data):
 				fh.write('%d,%s\n' % (i,','.join(' '.join(e) for e in d)))
-		with open('%s_gold.csv' % (fb), 'w') as fh:
-			fh.write('gold\n%s' % '\n'.join(self.annotation[oix]))
-		with open('%s_situations.csv' % (fb),'w') as fh:
-			fh.write('utterance,word\n%s' % '\n'.join('%d,%d' % (c[0],c[1]) for c in self.token_index[oix]))
 
 	def create_graph_inference_objects(self,
 			representation_level = 'exemplar',

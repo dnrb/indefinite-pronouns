@@ -109,14 +109,14 @@ class experiment:
         self.params = params
         self.data_path = params['dataset']
         self.stem_dict_path = params['stem dict']
-        self.dataset = data(self.data_path, self.stem_dict_path, self.params)
+        self.dataset = data(self.data_path, self.stem_dict_path,
+                            self.params['data params'])
         self.dataset.create_graph_inference_objects(
             representation_level = params['category level'],
             frequency_cutoff = params['low freq threshold'])
 
     def infer_graph(self, category_level = "function", algorithm = angluin,
-                    low_freq_threshold = 5, leave_out_uf = True,
-                    valid_ref_types = ['thing', 'one', 'body']):
+                    low_freq_threshold = 5, data_params = []):
         """
         algorithm: class -- graph inference algorithm class
         category_level: str -- in {'function', 'exemplar'}; tells whether to
@@ -293,8 +293,7 @@ def graph_inferring_experiment(params):
     G, SG = e.infer_graph(category_level = params['category level'],
         algorithm = eval(params['algorithm']),
         low_freq_threshold = params['low freq threshold'],
-        leave_out_uf = params['leave out UF'],
-        valid_ref_types = params['valid ref types'])
+        data_params = params['data params'])
 
     # write the graph edges and labels to files
     if params['write to file'] is True:
@@ -328,35 +327,6 @@ def graph_evaluating_experiment(params):
         algorithm = eval(params['algorithm']),
         low_freq_threshold = params['low freq threshold'])
     return
-
-def get_files_for_all_ref_type_params(input_dir, input_file, output_dir):
-    """
-    input_dir: str-- path to input file
-    input_file: str -- name of input file
-    output_dir: str -- name of directory to write output files to
-
-    Reads in the situation-language format file from input dir at input file
-    and writes files to output_dir for each combination of the haspelmath
-    type parameters (+/-IQ, +/-Q2, +/-PRED).
-    """
-
-    formatter = file_formatter()
-    for iq in ["+IQ", "-IQ"]:
-        for q2 in ["+Q2", "-Q2"]:
-            for pred in ["+PRED", "-PRED"]:
-                hasp_type_params = [iq, q2, pred]
-                output_file_name = ""
-                for item in [iq, q2, pred]:
-                    if item[0] == "+":
-                        output_file_name += "plus_"
-                    else:
-                        output_file_name += "minus_"
-                    output_file_name += item[1:]
-                    if item != pred:
-                        output_file_name += "_"
-                output_file_name += ".csv"
-                formatter.convert_to_3_header_regier_format(input_dir + input_file,
-                    output_dir + output_file_name, hasp_type_params = hasp_type_params)
 
 
 if __name__ == "__main__":

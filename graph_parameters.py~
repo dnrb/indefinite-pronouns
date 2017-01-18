@@ -5,7 +5,7 @@ params = {
 'stem dict' : 'data/stemming_dictionary.csv',
 'category level' : 'function',   # in {'function', 'exemplar'}
 'algorithm' : 'angluin',
-'low freq threshold' : 5,	# markers with fewer than this number of occurrences are weeded out
+'low freq threshold' : 15,	# markers with fewer than this number of occurrences are weeded out
 'data params': ['noUF'], # can include a combination of {'noUF', 'PRED', 'Q2', 'IQ'}; see data class in data.py for details
 
 # these parameters are for evaluating a graph

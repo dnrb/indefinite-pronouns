@@ -110,7 +110,8 @@ class data:
 			for k in ids_sorted:
 				symbols.append(k)
 				self.sense_names.append(id_to_function[k])
-
+		print(function_dictionary)
+		print(self.sense_names)
 		self.senses = []  # list of subgraphs for each
 
 		# add subgraph for each langauge-marker

@@ -127,3 +127,26 @@ class data:
 		self.languages = set([g.graph['language'] for g in self.senses])
 		self.n_S = self.G.number_of_nodes()
 		return
+
+	def create_graph_inference_estimation(self, test = 'not dissociated'): # test = {not dissociated,associated}
+		tf_set = set()
+		# this is the set in which all Term - Function pairs will be contained
+		# that cannot be dissociated (i.e, for which we do not know for sure that
+		# they are not associated) - done with Fisher Exact tests
+		for onto in set(d.ontological):
+			if onto not in ['body','thing']: continue
+			for li in range(30):
+				terms = set(tuple(dd[li]) for dd in d.data[d.ontological == onto])
+				for annot in set(d.annotation):
+					if annot == 'UF': continue
+					d_annot = d.data[(d.ontological == onto) * (d.annotation == annot)]
+					for term in terms:
+						aa = len([t for t in d_annot if tuple(t[li]) == term])
+						ab = len(d_annot) - aa
+						ba = len([t for t in d.data[d.ontological == onto] if tuple(t[li]) == term]) - aa
+						bb = len(d.data[d.ontological == onto]) - (aa + ab + ba)
+						if test == 'not dissociated' and fisher_exact([[aa,ab],[ba,bb]],'less')[1] > .05:
+							tf_set.add((li,term,annot))
+						if test == 'associated' and fisher_exact([[aa,ab],[ba,bb]],'greater')[1] < .05:
+							tf_set.add((li,term,annot))
+		return

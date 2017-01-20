@@ -4,6 +4,7 @@ import numpy as np
 from scipy.sparse import csr_matrix
 from collections import Counter
 import networkx as nx
+from scipy.stats import fisher_exact
 
 class data:
 
@@ -142,20 +143,26 @@ class data:
 		# this is the set in which all Term - Function pairs will be contained
 		# that cannot be dissociated (i.e, for which we do not know for sure that
 		# they are not associated) - done with Fisher Exact tests
-		for onto in set(d.ontological):
+		for onto in set(self.ontological):
 			if onto not in ['body','thing']: continue
+			d_onto = self.data[self.ontological == onto]
 			for li in range(30):
-				terms = set(tuple(dd[li]) for dd in d.data[d.ontological == onto])
-				for annot in set(d.annotation):
-					if annot == 'UF': continue
-					d_annot = d.data[(d.ontological == onto) * (d.annotation == annot)]
-					for term in terms:
-						aa = len([t for t in d_annot if tuple(t[li]) == term])
-						ab = len(d_annot) - aa
-						ba = len([t for t in d.data[d.ontological == onto] if tuple(t[li]) == term]) - aa
-						bb = len(d.data[d.ontological == onto]) - (aa + ab + ba)
+				terms = set(tuple(dd[li]) for dd in d_onto)
+				for term in terms:
+					for annot in set(self.annotation):
+						valid = False
+						if annot == 'UF': continue
+						d_onto_annot = self.data[(self.ontological == onto) * (self.annotation == annot)]
+						aa = len([t for t in d_onto_annot if tuple(t[li]) == term])
+						ab = len(d_onto_annot) - aa
+						ba = len([t for t in d_onto if tuple(t[li]) == term]) - aa
+						bb = len(d_onto) - (aa + ab + ba)
 						if test == 'not dissociated' and fisher_exact([[aa,ab],[ba,bb]],'less')[1] > .05:
+							valid = True
 							tf_set.add((li,term,annot))
 						if test == 'associated' and fisher_exact([[aa,ab],[ba,bb]],'greater')[1] < .05:
+							valid = True
 							tf_set.add((li,term,annot))
-		return
+						print('language %d term %s annot %s\tassoc: %r\t (n(t,f) = %d, n(t) = %d, n(f) = %d' %
+								(li,term,annot,valid,aa,ba,ab))
+		return tf_set

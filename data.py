@@ -64,13 +64,13 @@ class data:
 		for di,d in enumerate(self.data):
 			M[di,[term_dict[(ti,tt)] for ti,t in enumerate(d) for tt in t]] = 1
 			for ti,t in enumerate(d):
-				if len(t) == 0: 
+				if len(t) == 0:
 					M[di,lg_ixx[ti]] = 9
 		#
 		fb = 'oc_%s' % ('_'.join(sorted(self.parameters)))
 		with open('%s.csv' % fb, 'w') as fh:
-			fh.write('sit,%s\n' % 
-					 ','.join('%d:%s' % k for k in 
+			fh.write('sit,%s\n' %
+					 ','.join('%d:%s' % k for k in
 						sorted(term_dict, key = lambda k : term_dict[k])))
 			for i,r in enumerate(M):
 				fh.write('%d,%s\n' % (i,','.join([str(c) for c in r])))
@@ -98,13 +98,22 @@ class data:
 					 for li,dl in enumerate(d) for w in dl]
 		term_count = Counter(all_terms)
 		selected_terms = sorted(t for t in set(all_terms) if term_count[t] > frequency_cutoff and t[1] != '')
+		
+		if representation_level == 'exemplar':
+			self.sense_names = list(set(representation_dict.values()))
+			symbols = list(range(len(self.sense_names)))		
+		else:    # representation_level == 'function'
+			self.sense_names = []
+			symbols = []			
+			id_to_function = {v : k for k, v in function_dictionary.items()}
+			ids_sorted = sorted(id_to_function.keys())			
+			for k in ids_sorted:
+				symbols.append(k)
+				self.sense_names.append(id_to_function[k])
 
-		self.sense_names = list(set(representation_dict.values()))
-		self.sense_names.sort()
-		symbols = list(range(len(self.sense_names)))
 		self.senses = []  # list of subgraphs for each
 
-		# add subgraph for each langauge-marker 
+		# add subgraph for each langauge-marker
 		for t in selected_terms:
 			situations = sorted(set([representation_dict[i] for i,s in
 									enumerate(self.data) if t[1] in s[t[0]]]))

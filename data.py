@@ -23,12 +23,12 @@ class data:
 				situation.
 				
 	- token_index: list of list -- Sublists correspond to the situation columns
-				in the data attribute. Each sublist contains 2 
+				in the data attribute. Each sublist contains 2
 				items: the line number and the word index within that line
 				for a given situation.
 	- ontological: list of str -- The ontological categories corresponding
 				to the situation columns in the data attribute.
-				Ontological categories include {"body", "one", "thing", 
+				Ontological categories include {"body", "one", "thing",
 				"where", ...}
 	- annotation: list of str -- The annotated Haspelmath categories corresponding
 				to the situation columns in the data attribute.
@@ -41,7 +41,7 @@ class data:
 	- n_S: int -- the number of senses in sense_names
 	- G: networkx graph -- a graph with nodes for each function in sense_names
     	- senses: list of networkx graph -- each graph corresponds to a marker
-				in a particular langauge, and is a subgraph of 
+				in a particular langauge, and is a subgraph of
 				the attribute G with only the nodes (functions)
 				relevant for the particular marker.
     	- languages: list of str -- list of languages in data (numbered)
@@ -51,24 +51,24 @@ class data:
 			group includes sentences where an indefinite pronoun
 			is predicative, for example "That is *something?"
 			or "It's *nothing".
-	- "IQ" -- include indirect questions in the Question (QU) category. 
-			This means sentences like "Does he really think [she 
+	- "IQ" -- include indirect questions in the Question (QU) category.
+			This means sentences like "Does he really think [she
 			did *something that awful]?", where the indefinite pronoun
-			is in a subordinate clause within a quesiton would be 
+			is in a subordinate clause within a quesiton would be
 			considered Question (QU) instead of what their primary
 			marking (in this case Specific (SP)).
 	- "Q2" -- include cases that are ambiguous between question structure
-			and declarative structure. (The default is to leave these 
+			and declarative structure. (The default is to leave these
 			out). An example of a Q2 sentence is "You have something to
 			eat?", which could be interpreted as a declarative with
-			question intonation (which would be marked as Specific (SP)) 
+			question intonation (which would be marked as Specific (SP))
 			or as an elided version of "Do you have something to eat?"
-			(which would be marked as QU). The annotation used is the 
+			(which would be marked as QU). The annotation used is the
 			majority of the votes of the annotators.
 	- "noUF" -- exclude all cases that are marked as Unclear Function (UF). (The
 			default is to include them as their own category).
 	- "SPLIT" -- split multi-word translations of indefinite pronouns into separate
-			words. This means that the shared morphology of Turkish 
+			words. This means that the shared morphology of Turkish
 			'bir sey' and 'sey' would be taken into account. Otherwise
 			they are treated as separate types.
 	"""
@@ -81,7 +81,7 @@ class data:
 		stem_dict_path: str -- path to stem_dict csv
 		parameters: list of str -- list of parameters
 
-		Initialize a data object with attributes parameters, data, 
+		Initialize a data object with attributes parameters, data,
 		token_index, ontolgical, annotation, and utterance.
 		"""
 		self.parameters = parameters
@@ -138,7 +138,6 @@ class data:
 		self.annotation = np.array(self.annotation)
 		self.data = np.array(self.data)
 		self.token_index = np.array(self.token_index)
-		print(self.token_index)
 		return
 
 	def create_oc_mds_files(self):
@@ -148,7 +147,7 @@ class data:
 		Create files for OCMDS from data. This creates:
 			- a csv distance matrix between terms in OCMDS format
 			- a labels file with per-language labels for each situation
-			- a gold file with (English) utterance, (English) word, annotation, and 
+			- a gold file with (English) utterance, (English) word, annotation, and
 			  ontological category
 		"""
 		
@@ -156,8 +155,8 @@ class data:
 		terms = set([(li,w) for d in self.data for li,dl in enumerate(d) for w in dl])
 		term_dict = { k : v for v,k in enumerate(sorted(terms)) }
 		
-		# initialize lg_ixx (list of list of terms, with terms for each 
-		# language in a separate list) 
+		# initialize lg_ixx (list of list of terms, with terms for each
+		# language in a separate list)
 		# initialize M (distance matrix betweeen terms)
 		lg_ixx = [[] for i in range(30)]
 		for k,v in term_dict.items():
@@ -186,7 +185,7 @@ class data:
 			for i,d in enumerate(self.data):
 				fh.write('%d,%s\n' % (i,','.join(' '.join(e) for e in d)))
 
-		# write (English) utterance, (English) word, annotation, and ontological 
+		# write (English) utterance, (English) word, annotation, and ontological
 		# category (to color code OCMDS plots)
 		with open('%s_gold.csv' % fb, 'w') as fh:
 			fh.write('utt,word,annotation,ontological\n')
@@ -200,11 +199,11 @@ class data:
 			frequency_cutoff = 1):
 		"""
 		(data, str, int) -> None
-		representation_level: str -- in {'exemplar', 'function'}; when 
+		representation_level: str -- in {'exemplar', 'function'}; when
 					this is set as 'function', functions are nodes,
 					and when it's set as 'exemplar', individual
 					situations (columns in data attribute)
-		frequency_cutoff: int -- situations that occurr fewer than 
+		frequency_cutoff: int -- situations that occurr fewer than
 					frequency_cutoff times are not included in
 					the graph_inferrence objects.
 		
@@ -214,7 +213,7 @@ class data:
 		succeptible to data scarcity problems.
 		"""
 		
-		# 
+		#
 		function_dictionary = { k : v for v,k in enumerate(sorted(set(self.annotation))) }
 		if representation_level == 'exemplar':
 			representation_dict = { k : k for k in range(len(self.data)) }
@@ -263,17 +262,17 @@ class data:
 		self.n_S = self.G.number_of_nodes()
 		return
 
-	def create_graph_inference_estimation(self, test = 'not dissociated'): 
+	def create_graph_inference_estimation(self, test = 'not dissociated'):
 		"""
 		(data, str, int) -> None
 		test: str -- in {'not dissociated', 'associated'}; when this is
-				set as 'not dissociated', for each term, all 
+				set as 'not dissociated', for each term, all
 				functions that are not dissociated with the
-				term are included in that term's subgraph in 
+				term are included in that term's subgraph in
 				the senses attribute. When this is set as 'associated'
 				all functions that are associated with with the
 				term are included in that term's subgraph in the
-				senses attribute. The setting 'not dissocated' 
+				senses attribute. The setting 'not dissocated'
 				is more permissive.
 		
 		Create graph inferrence attributes (described under "Additional
@@ -310,3 +309,10 @@ class data:
 						print('language %d term %s annot %s\tassoc: %r\t (n(t,f) = %d, n(t) = %d, n(f) = %d' %
 								(li,term,annot,valid,aa,ba,ab))
 		return tf_set
+
+if __name__ == "__main__":
+	import sys
+	d = data(sys.argv[1], sys.argv[2], [])
+	d.create_oc_mds_files()
+
+

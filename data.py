@@ -306,9 +306,39 @@ class data:
 						if test == 'associated' and fisher_exact([[aa,ab],[ba,bb]],'greater')[1] < .05:
 							valid = True
 							tf_set.add((li,term,annot))
-						print('language %d term %s annot %s\tassoc: %r\t (n(t,f) = %d, n(t) = %d, n(f) = %d' %
-								(li,term,annot,valid,aa,ba,ab))
-		return tf_set
+						#print('language %d term %s annot %s\tassoc: %r\t (n(t,f) = %d, n(t) = %d, n(f) = %d' %
+						#		(li,term,annot,valid,aa,ba,ab))
+		
+		# construct dict mapping language and term to a list of functions
+		lang_term_to_functions = {}
+		for item in sorted(tf_set):
+			key = (item[0], item[1])
+			if key in lang_term_to_functions:
+				lang_term_to_functions[key].append(item[2])
+			else:
+				lang_term_to_functions[key] = [item[2]]
+
+		self.sense_names = list(sorted(set([item[2] for item in tf_set])))
+		symbols = list(range(len(self.sense_names)))
+		self.senses = []
+
+		# add subgraph for each langauge-marker
+		for t in lang_term_to_functions:
+			L = t[0]
+			N = t[1]
+			T = [self.sense_names.index(sn) for sn in lang_term_to_functions[t]]
+			new_g = nx.Graph(language = L, term = N)
+			self.senses.append(new_g)
+			self.senses[-1].add_nodes_from(T)
+
+		# construct G
+		self.G = nx.Graph()
+		for i in symbols:
+			self.G.add_node(i, hasp_type=self.sense_names[i])
+		self.languages = set([g.graph['language'] for g in self.senses])
+		self.n_S = self.G.number_of_nodes()
+		return
+
 
 if __name__ == "__main__":
 	import sys

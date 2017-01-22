@@ -5,6 +5,7 @@ Breakdown of scripts and how to use them by section of paper:
 
 * Method
 	- create_dev_test_split.py
+		- usage: create_dev_test_split.py
 
 * Results
 	Are all functions equally important?

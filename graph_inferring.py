@@ -56,11 +56,15 @@ class greedy_best_first:
 
 class angluin(greedy_best_first):
     """
-    Graph-inferring object that uses the Angluin algorithm.
+    Graph-inferring object that uses the Angluin algorithm. Note that this 
+    implementation of the angluin algorithm is non-deterministic because at 
+    each step where an edge is added, it selects a random best edge (as
+    opposed to the first best edge, as is done in the Regier paper). 
     """
 
     def get_score(self, SG):
         """
+	(angluin, list of network graphs) -> int
         SG: list of networkx graphs -- subgraphs for each language in datset
                     parameter of __init__ for greedy_best_first (superclass)
 
@@ -70,6 +74,7 @@ class angluin(greedy_best_first):
 
     def update_score(self, O, SG, edge):
         """
+	(angluin, int, list of networkx graphs, list of int) -> int
         O: int -- current Angluin score
         SG: list of networkx graphs -- subgraphs for each language in datset
                     parameter of __init__ for greedy_best_first (superclass)
@@ -83,6 +88,7 @@ class angluin(greedy_best_first):
 
     def possible_pair(self, i, j):
         """
+	(int, int) -> bool
         i: int -- node id
         j: int -- node id
 
@@ -102,9 +108,10 @@ class experiment:
 
     def __init__(self, params):
         """
-        file_name: str -- path to file containing data for graph construction
+	(dict) -> None
+        params: dict -- dict mapping parameter names to setting.
 
-        Constructs an experiment object with attribute file_name.
+        Constructs an experiment object based on parameters.
         """
         self.params = params
         self.data_path = params['dataset']
@@ -112,36 +119,40 @@ class experiment:
         self.dataset = data(self.data_path, self.stem_dict_path,
                             self.params['data params'])
         self.dataset.create_graph_inference_objects(
-            representation_level = params['category level'],
+            representation_level = params['representation level'],
             frequency_cutoff = params['low freq threshold'])
 
-    def infer_graph(self, category_level = "function", algorithm = angluin,
+    def infer_graph(self, representation_level = "function", algorithm = angluin,
                     low_freq_threshold = 5, data_params = []):
         """
-        algorithm: class -- graph inference algorithm class
-        category_level: str -- in {'function', 'exemplar'}; tells whether to
+	(experiment, str, greedy_best_first, int, list) 
+		-> networkx graph, list of networkx graphs      
+	algorithm: greedy_best_first -- graph inference algorithm class
+        representation_level: str -- in {'function', 'exemplar'}; tells whether to
                     use the exemplar codes as sense or to use the Haspelath
                     functions in the second header to group the exemplars
                     into senses.
         low_freq_threshold: int -- must be >= 0. Markers with fewer than this
                     number of occurrences are filtered out.
+	a.G: networkx graph -- networkx graph inferred
+	a.SG: list of networkx graphs -- subgraphs of a.SG corresponding to terms
 
-        Infers a graph based on category_level, algorithm, and
+        Infers a graph based on representation_level, algorithm, and
         low_freq_threshold.
         """
         a = algorithm(self.dataset)
         return a.G, a.SG
-        # returns the inferred graph and the inferred subgraphs
 
-    def evaluate_graph(self, gold_standard_edges, category_level = "function",
+    def evaluate_graph(self, gold_standard_edges, representation_level = "function",
         algorithm = angluin, low_freq_threshold = 5):
         """
+	(experiment, list of str, str, greedy_best_first, int) -> None
         gold_standard_edges: list of str -- stores a list of edges in the
                     gold standard graph; note that the edges are the
                     sense_names and not the sense symbols (ints corresponding
                     to indices in sense_names)
-        algorithm: class -- graph inference algorithm class
-        category_level: str -- in {'function', 'exemplar'}; tells whether to
+        algorithm: greedy_best_first -- graph inference algorithm class
+        representation_level: str -- in {'function', 'exemplar'}; tells whether to
                     use the exemplar codes as sense or to use the Haspelath
                     functions in the second header to group the exemplars
                     into senses.
@@ -196,26 +207,31 @@ class file_formatter():
     """
 
     def __init__(self):
+	"""
+	(file_formatter) -> None
+	Initialize a file_formatter object.
+	"""
         pass
 
 
     def save_graph(self, G, edge_path, label_path, label_type = 'sense',
-                    referent_types = None, category_level = "function"):
+                    referent_types = None, representation_level = "function"):
         """
+	(file_formatter, networkx graph, str, str, str, dict, str) -> None
         G: networkx graph -- graph to write to files
         edge_path: str -- path to where to store edges
         label_path: str -- path to where to store labels
-        label_type: str -- only relevant when category_level is "exemplar"; should be
+        label_type: str -- only relevant when representation_level is "exemplar"; should be
                             in {'sense', 'referent type'}
-        referent_types:dict -- only relevant when category_level is "exemplar" and
+        referent_types:dict -- only relevant when representation_level is "exemplar" and
                             label_type is "referent type"; used to group exemplars
                             into referent types
-        category_level: str -- in {"function", "exemplar"}; "function" means
+        representation_level: str -- in {"function", "exemplar"}; "function" means
                             that the exemplars are grouped together; "exemplar"
                             means each exemplar is treated as its own category.
 
         Writes the edges and labels in G to output files at edge_path and
-        label_path. If category_level is "function", the labels are all "0".
+        label_path. If representation_level is "function", the labels are all "0".
 
         Note: 1 is added to each of the node ids written to the files because
         the node ids are 0-indexed, but no node in network graphs in R can have
@@ -228,9 +244,9 @@ class file_formatter():
                 edge_file.write(str(e[0] + 1) + "," + str(e[1] + 1) + "\n")
 
         # find labels
-        if category_level == "function":
+        if representation_level == "function":
             labels = [G.node[i]['hasp_type'] for i in range(len(G.nodes()))]
-        else:    # category_level == "exemplar"
+        else:    # representation_level == "exemplar"
             labels = self.get_labels(G, label_type, referent_types)
 
         # write labels to label_path
@@ -241,11 +257,13 @@ class file_formatter():
 
     def get_labels(self, G, label_type, referent_type_dict):
         """
+	(file_formatter, networkx graph, str, dict) -> list
         dataset: str -- path to file in 3-header regier format
         label_type: str -- in {"sense", "referent type"}
         referent_type: dict -- maps referent types to the label for that
                         referent type (groups "one" and "body" together; both
                         map to "person")
+	labels: list of str -- labels corresponding to each node in G
 
         Returns the labels for the exemplars in dataset based on label_type
         and referent_type_dict
@@ -270,8 +288,10 @@ class file_formatter():
 
     def read_edges(self, edge_file):
         """
+	(file_formatter, str) -> list
         edge_file: str -- path to a csv file, where each line is in the format
                         "V1, V2", where V1 and V2 are vertices in a graph.
+	edges: list of edges from edge_file
 
         Returns a list of edges from edge_file.
         """
@@ -284,13 +304,14 @@ class file_formatter():
 
 def graph_inferring_experiment(params):
     """
+    (dict) -> None
     params: dict -- maps strings to different parameter values
 
     Infer a graph based on params.
     """
     # infer a graph
     e = experiment(params)
-    G, SG = e.infer_graph(category_level = params['category level'],
+    G, SG = e.infer_graph(representation_level = params['representation level'],
         algorithm = eval(params['algorithm']),
         low_freq_threshold = params['low freq threshold'],
         data_params = params['data params'])
@@ -301,20 +322,21 @@ def graph_inferring_experiment(params):
         formatter.save_graph(G, params['edges output'],
             params['label output'], label_type = params['label type'],
             referent_types = params['referent types'],
-            category_level = params['category level'])
+            representation_level = params['representation level'])
     return
 
 def graph_evaluating_experiment(params):
     """
+    (dict) -> None
     params: dict -- maps strings to different parameter values.
 
     Evaluates a "gold standard graph" based on a dataset.
 
-    Note: for a graph evaluating experiment, category_level should be function.
+    Note: for a graph evaluating experiment, representation_level should be function.
     """
 
-    if params['category level'] != 'function':
-        print("For graph evaluating experiment, category_level should be \'function\'")
+    if params['representaiton level'] != 'function':
+        print("For graph evaluating experiment, representation_level should be \'function\'")
         return
 
     # read in edges
@@ -323,9 +345,41 @@ def graph_evaluating_experiment(params):
     # run a graph evaluating experiment (prints output)
     e = experiment(params)
     e.evaluate_graph(gold_standard_edges,
-        category_level = params['category level'],
+        representation_level = params['representation level'],
         algorithm = eval(params['algorithm']),
         low_freq_threshold = params['low freq threshold'])
+    return
+
+def graph_inferring_experiment2(params):
+    """
+    (dict) -> None
+    params: dict -- maps strings to different parameter values
+
+    Infer a 1000 graphs based on params and print out a table correlating
+    edges of graphs inferred to frequency.
+    """
+
+    edges_to_freq = {}
+
+    for i in range(1000):
+
+        # infer a graph
+        e = experiment(params)
+        G, SG = e.infer_graph(category_level = params['category level'],
+            algorithm = eval(params['algorithm']),
+            low_freq_threshold = params['low freq threshold'],
+            data_params = params['data params'])
+        if str(G.edges()) in edges_to_freq:
+            edges_to_freq[str(G.edges())] += 1
+        else:
+            edges_to_freq[str(G.edges())] = 1
+
+    freqs_to_edges = {v : k for k, v in edges_to_freq.items()}
+    freqs = list(freqs_to_edges.keys())
+    freqs.reverse()
+    for item in freqs:
+        print(str(item) + ": " + str(freqs_to_edges[item]))
+
     return
 
 

@@ -8,20 +8,107 @@ from scipy.stats import fisher_exact
 
 class data:
 
+	"""
+	A representation of a dataset for clustering and graph inferrence.
+	
+	=== Attributes ===
+	- parameters: list of str -- relevant parameters are {"PR", "IQ", "Q2",
+                                "noUF", and "SPLIT"}; efects of parameters
+                                are described under the "Parameters" heading
+                                below.
+	- data: list of list -- matrix where each column is a situation (occurrence
+				of an indefinite pronoun in the corpus), and each
+				row is a language. Each cell contains the indefinite
+				pronoun used in a particular language for a given
+				situation.
+				
+	- token_index: list of list -- Sublists correspond to the situation columns
+				in the data attribute. Each sublist contains 2 
+				items: the line number and the word index within that line
+				for a given situation.
+	- ontological: list of str -- The ontological categories corresponding
+				to the situation columns in the data attribute.
+				Ontological categories include {"body", "one", "thing", 
+				"where", ...}
+	- annotation: list of str -- The annotated Haspelmath categories corresponding
+				to the situation columns in the data attribute.
+	- utterance: list of str -- The English sentence corresponding to the
+				situation columns in the data attribute.
+
+	=== Additional attributes for graph inferrence ===
+	- sense_names: list -- the names of each of the functions (each function is
+				a node in the graph inferred)
+	- n_S: int -- the number of senses in sense_names
+	- G: networkx graph -- a graph with nodes for each function in sense_names
+    	- senses: list of networkx graph -- each graph corresponds to a marker
+				in a particular langauge, and is a subgraph of 
+				the attribute G with only the nodes (functions)
+				relevant for the particular marker.
+    	- languages: list of str -- list of languages in data (numbered)
+
+	=== Parameters ===
+	- "PR" -- include Predicative (PRED) as a separate category. This
+			group includes sentences where an indefinite pronoun
+			is predicative, for example "That is *something?"
+			or "It's *nothing".
+	- "IQ" -- include indirect questions in the Question (QU) category. 
+			This means sentences like "Does he really think [she 
+			did *something that awful]?", where the indefinite pronoun
+			is in a subordinate clause within a quesiton would be 
+			considered Question (QU) instead of what their primary
+			marking (in this case Specific (SP)).
+	- "Q2" -- include cases that are ambiguous between question structure
+			and declarative structure. (The default is to leave these 
+			out). An example of a Q2 sentence is "You have something to
+			eat?", which could be interpreted as a declarative with
+			question intonation (which would be marked as Specific (SP)) 
+			or as an elided version of "Do you have something to eat?"
+			(which would be marked as QU). The annotation used is the 
+			majority of the votes of the annotators.
+	- "noUF" -- exclude all cases that are marked as Unclear Function (UF). (The
+			default is to include them as their own category).
+	- "SPLIT" -- split multi-word translations of indefinite pronouns into separate
+			words. This means that the shared morphology of Turkish 
+			'bir sey' and 'sey' would be taken into account. Otherwise
+			they are treated as separate types.
+	"""
+	
 	def __init__(self, data_path, stem_dict_path, parameters):
+		"""
+		(data, str, str, list) -> None
+
+		data_path: str -- path to input tsv
+		stem_dict_path: str -- path to stem_dict csv
+		parameters: list of str -- list of parameters
+
+		Initialize a data object with attributes parameters, data, 
+		token_index, ontolgical, annotation, and utterance.
+		"""
 		self.parameters = parameters
 		self.read_data(data_path, stem_dict_path)
 
 	def read_data(self, data_path, stem_dict_path):
-		#
+		"""
+		(data, str, str) -> None
+		data_path: str -- path to input tsv
+		stem_dict_path: str -- path to stem_dict csv
+
+		Initialize the data object with attributes data, token_index,
+		ontological, annotation, and utterance based on data_path
+		and stem_dict_path.
+		"""
+		
+		# read in stem_dict from stem_dict_path
 		stem_dict_raw = list(csv.reader(open(stem_dict_path), delimiter = ','))[1:]
 		stem_dict = { (int(l[0]), l[1]) : l[2] for l in stem_dict_raw }
-		#
+		
+		# initialize attributes
 		self.token_index = []
 		self.ontological = []
 		self.annotation = []
 		self.utterance = []
-		#
+		
+		# read in data from data_path
 		data_raw = list(csv.reader(open(data_path), delimiter='\t'))[1:]
 		self.data = []
 		for di,d in enumerate(data_raw):
@@ -45,29 +132,46 @@ class data:
 				if 'SPLIT' in self.parameters:
 					self.data[-1].append([t for t in re.split(' ', stem) if t != ''])
 				else: self.data[-1].append([stem])
-		#
+		
+		# convert attrubutes to np arrays
 		self.ontological = np.array(self.ontological)
 		self.annotation = np.array(self.annotation)
 		self.data = np.array(self.data)
 		self.token_index = np.array(self.token_index)
+		print(self.token_index)
 		return
 
 	def create_oc_mds_files(self):
+		"""
+		(data) -> None
+		
+		Create files for OCMDS from data. This creates:
+			- a csv distance matrix between terms in OCMDS format
+			- a labels file with per-language labels for each situation
+			- a gold file with (English) utterance, (English) word, annotation, and 
+			  ontological category
+		"""
+		
 		# frequency cut off is done in OC script
 		terms = set([(li,w) for d in self.data for li,dl in enumerate(d) for w in dl])
 		term_dict = { k : v for v,k in enumerate(sorted(terms)) }
-		#
+		
+		# initialize lg_ixx (list of list of terms, with terms for each 
+		# language in a separate list) 
+		# initialize M (distance matrix betweeen terms)
 		lg_ixx = [[] for i in range(30)]
 		for k,v in term_dict.items():
 			lg_ixx[k[0]].append(v)
 		M = np.zeros((self.data.shape[0],len(terms)), dtype = 'int') + 6
-		#
+		
+		# populate M
 		for di,d in enumerate(self.data):
 			M[di,[term_dict[(ti,tt)] for ti,t in enumerate(d) for tt in t]] = 1
 			for ti,t in enumerate(d):
 				if len(t) == 0:
 					M[di,lg_ixx[ti]] = 9
-		#
+
+		# write M to a csv file
 		fb = 'oc_%s' % ('_'.join(sorted(self.parameters)))
 		with open('%s.csv' % fb, 'w') as fh:
 			fh.write('sit,%s\n' %
@@ -75,11 +179,15 @@ class data:
 						sorted(term_dict, key = lambda k : term_dict[k])))
 			for i,r in enumerate(M):
 				fh.write('%d,%s\n' % (i,','.join([str(c) for c in r])))
-				#
+		
+		# write language labels to a csv (to color code OCMDS plots by language)
 		with open('%s_labels.csv' % fb, 'w') as fh:
 			fh.write('sit,%s\n' % ','.join('L%d' % li for li in range(30)))
 			for i,d in enumerate(self.data):
 				fh.write('%d,%s\n' % (i,','.join(' '.join(e) for e in d)))
+
+		# write (English) utterance, (English) word, annotation, and ontological 
+		# category (to color code OCMDS plots)
 		with open('%s_gold.csv' % fb, 'w') as fh:
 			fh.write('utt,word,annotation,ontological\n')
 			for o,a,ix in zip(self.ontological,
@@ -90,6 +198,23 @@ class data:
 	def create_graph_inference_objects(self,
 			representation_level = 'exemplar',
 			frequency_cutoff = 1):
+		"""
+		(data, str, int) -> None
+		representation_level: str -- in {'exemplar', 'function'}; when 
+					this is set as 'function', functions are nodes,
+					and when it's set as 'exemplar', individual
+					situations (columns in data attribute)
+		frequency_cutoff: int -- situations that occurr fewer than 
+					frequency_cutoff times are not included in
+					the graph_inferrence objects.
+		
+		Create graph inferrence attributes (described under "Additional
+		attributes for graph inferrence" in class docstring). This is
+		based on ACTUAL co-occurrences of functions with terms, and is
+		succeptible to data scarcity problems.
+		"""
+		
+		# 
 		function_dictionary = { k : v for v,k in enumerate(sorted(set(self.annotation))) }
 		if representation_level == 'exemplar':
 			representation_dict = { k : k for k in range(len(self.data)) }
@@ -138,7 +263,26 @@ class data:
 		self.n_S = self.G.number_of_nodes()
 		return
 
-	def create_graph_inference_estimation(self, test = 'not dissociated'): # test = {not dissociated,associated}
+	def create_graph_inference_estimation(self, test = 'not dissociated'): 
+		"""
+		(data, str, int) -> None
+		test: str -- in {'not dissociated', 'associated'}; when this is
+				set as 'not dissociated', for each term, all 
+				functions that are not dissociated with the
+				term are included in that term's subgraph in 
+				the senses attribute. When this is set as 'associated'
+				all functions that are associated with with the
+				term are included in that term's subgraph in the
+				senses attribute. The setting 'not dissocated' 
+				is more permissive.
+		
+		Create graph inferrence attributes (described under "Additional
+		attributes for graph inferrence" in class docstring). This is
+		based on EXPECTED co-occurrences of functions with terms, and is
+		less succeptible to data scarcity problems.
+		"""
+
+		# test = {not dissociated,associated}
 		tf_set = set()
 		# this is the set in which all Term - Function pairs will be contained
 		# that cannot be dissociated (i.e, for which we do not know for sure that

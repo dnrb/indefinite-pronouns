@@ -1,5 +1,10 @@
 import csv
 
+"""
+Splits exemplars in data/full_set.csv into a dev_set and test_set of equal
+sizes and writes them to data/dev_set.tsv and data/test_set.csv.
+"""
+
 all_ips = list(csv.reader(open('data/full_set.csv'),delimiter ='\t'))
 all_ips_sorted = sorted(all_ips[1:], key = lambda k : (k[6],k[2],k[4],k[3]))
 dev = open('data/dev_set.tsv', 'w')

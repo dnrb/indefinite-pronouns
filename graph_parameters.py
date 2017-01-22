@@ -3,7 +3,7 @@
 params = {
 'dataset' : 'data/dev_set.tsv',   # this should have 3 headers: referent type, haspelmath category, and exemplar ID
 'stem dict' : 'data/stemming_dictionary.csv',
-'category level' : 'function',   # in {'function', 'exemplar'}
+'representation level' : 'function',   # in {'function', 'exemplar'}
 'algorithm' : 'angluin',
 'low freq threshold' : 5,	# markers with fewer than this number of occurrences are weeded out
 'data params': ['noUF'], # can include a combination of {'noUF', 'PRED', 'Q2', 'IQ'}; see data class in data.py for details

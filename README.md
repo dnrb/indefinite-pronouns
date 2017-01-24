@@ -17,10 +17,10 @@ Breakdown of scripts and how to use them by section of paper:
 * The perspective of a similarity space
 	- data.py
 		- usage: python data.py data/test_set.tsv data/stemming_dictionary.csv
-		- description: restructures data as input for oc.r, and writes them to files oc__labels.csv, oc__gold.csv, and oc_.csv.
+		- description: restructures data as input for oc.r, and writes them to files oc_SPLIT_labels.csv, oc_SPLIT_gold.csv, and oc_.csv.
 	- oc.r
 		- usage: Rscript oc.r
-		- description: Generates OCMDS plots based on info in oc__labels.csv, oc__gold.csv and oc_.csv.
+		- description: Generates OCMDS plots based on info in oc_SPLIT_labels.csv, oc_SPLIT_gold.csv and oc_SPLIT.csv.
 
 Other scripts used in our research
 

@@ -342,7 +342,7 @@ class data:
 
 if __name__ == "__main__":
 	import sys
-	d = data(sys.argv[1], sys.argv[2], [])
+	d = data(sys.argv[1], sys.argv[2], ["SPLIT"])
 	d.create_oc_mds_files()
 
 

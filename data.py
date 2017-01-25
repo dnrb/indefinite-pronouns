@@ -262,6 +262,35 @@ class data:
 		self.n_S = self.G.number_of_nodes()
 		return
 
+	def get_tf_associations(self, test):
+		# test = {not dissociated,associated}
+		tf_set = set()
+		# this is the set in which all Term - Function pairs will be contained
+		# that cannot be dissociated (i.e, for which we do not know for sure that
+		# they are not associated) - done with Fisher Exact tests
+		for onto in set(self.ontological):
+			if onto not in ['body','thing']: continue
+			d_onto = self.data[self.ontological == onto]
+			for li in range(30):
+				terms = set([w for dd in d_onto for w in dd[li]])
+				for term in terms:
+					for annot in set(self.annotation):
+						valid = False
+						if annot == 'UF': continue
+						d_onto_annot = self.data[(self.ontological == onto) * (self.annotation == annot)]
+						aa = len([t for t in d_onto_annot if term in t[li]]) # + term + function
+						ab = len(d_onto_annot) - aa # - term + function
+						ba = len([t for t in d_onto if term in t[li]]) - aa # + term - function
+						bb = len(d_onto) - (aa + ab + ba) # - term - function
+						if test == 'not dissociated' and fisher_exact([[aa,ab],[ba,bb]],'less')[1] > .05:
+							valid = True
+							tf_set.add((li,term,annot))
+						if test == 'associated' and fisher_exact([[aa,ab],[ba,bb]],'greater')[1] < .05:
+							valid = True
+							tf_set.add((li,term,annot))
+						# if aa > 0: print('%s,%d,%s,%s,%r,%d,%d,%d' % (onto,li,term,annot,valid,aa,ba,ab))
+		return tf_set
+
 	def create_graph_inference_estimation(self, test = 'not dissociated'):
 		"""
 		(data, str, int) -> None
@@ -281,33 +310,7 @@ class data:
 		less succeptible to data scarcity problems.
 		"""
 
-		# test = {not dissociated,associated}
-		tf_set = set()
-		# this is the set in which all Term - Function pairs will be contained
-		# that cannot be dissociated (i.e, for which we do not know for sure that
-		# they are not associated) - done with Fisher Exact tests
-		for onto in set(self.ontological):
-			if onto not in ['body','thing']: continue
-			d_onto = self.data[self.ontological == onto]
-			for li in range(30):
-				terms = set(tuple(dd[li]) for dd in d_onto)
-				for term in terms:
-					for annot in set(self.annotation):
-						valid = False
-						if annot == 'UF': continue
-						d_onto_annot = self.data[(self.ontological == onto) * (self.annotation == annot)]
-						aa = len([t for t in d_onto_annot if tuple(t[li]) == term])
-						ab = len(d_onto_annot) - aa
-						ba = len([t for t in d_onto if tuple(t[li]) == term]) - aa
-						bb = len(d_onto) - (aa + ab + ba)
-						if test == 'not dissociated' and fisher_exact([[aa,ab],[ba,bb]],'less')[1] > .05:
-							valid = True
-							tf_set.add((li,term,annot))
-						if test == 'associated' and fisher_exact([[aa,ab],[ba,bb]],'greater')[1] < .05:
-							valid = True
-							tf_set.add((li,term,annot))
-						#print('language %d term %s annot %s\tassoc: %r\t (n(t,f) = %d, n(t) = %d, n(f) = %d' %
-						#		(li,term,annot,valid,aa,ba,ab))
+		tf_set = self.get_tf_associations(test)
 		
 		# construct dict mapping language and term to a list of functions
 		lang_term_to_functions = {}
@@ -322,7 +325,7 @@ class data:
 		symbols = list(range(len(self.sense_names)))
 		self.senses = []
 
-		# add subgraph for each langauge-marker
+		# add subgraph for each language-marker
 		for t in lang_term_to_functions:
 			L = t[0]
 			N = t[1]

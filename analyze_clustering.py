@@ -107,7 +107,7 @@ def write_cluster_assignments(cluster_assignments, parameters):
 	with open('clustering_%s.csv' % '_'.join(sorted(parameters)),'w') as fh:
 		fh.write('assignment\n%s' % '\n'.join([str(s) for s in cluster_assignments])) 
 
-def sim(d1,d2, parameters, legal_tf_set):
+def sim(d1,d2, parameters):
 	"""
 	(list of str, list of str, list of str) -> float
 	d1: list of str -- list of terms for each language used in a situation
@@ -140,20 +140,19 @@ def get_similarity_matrix(d, parameters, oix, association = 'None'):
 	"""
 	#
 	if association == 'None':
-		legal_tf_set = set([(li,t,f) for sit,f in zip(d.data,d.annotation) 
+		legal_term_set = set([(li,t) for sit,f in zip(d.data,d.annotation) 
 			for li,tt in enumerate(sit) for t in tt])
 	else:
-		legal_tf_set = d.get_tf_associations(test = association)
+		legal_term_set = set([(li,t) for li,t,f in d.get_tf_associations(test = association)])
 	#
-	filtered_data = np.array([[[t for t in tt if (li,t,f) in legal_tf_set] 
-		for li,tt in enumerate(sit)] 
-		for sit,f in zip(d.data,d.annotation)])
+	filtered_data = np.array([[[t for t in tt if (li,t) in legal_term_set] 
+		for li,tt in enumerate(sit)] for sit in d.data])
 	data_sub = filtered_data[oix]
 	similarity_matrix = np.ones((data_sub.shape[0],data_sub.shape[0]))
 	for i,di in enumerate(data_sub):
 		for j,dj in enumerate(data_sub):
 			if j >= i: continue
-			similarity_matrix[i,j] = similarity_matrix[j,i] = sim(di, dj, parameters, legal_tf_set)
+			similarity_matrix[i,j] = similarity_matrix[j,i] = sim(di, dj, parameters)
 	return similarity_matrix
 
 def single_exp():

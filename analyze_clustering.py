@@ -140,7 +140,7 @@ def get_similarity_matrix(d, parameters, oix, association = 'None'):
 	"""
 	#
 	if association == 'None':
-		legal_term_set = set([(li,t) for sit,f in zip(d.data,d.annotation) 
+		legal_term_set = set([(li,t) for sit,f in d.data 
 			for li,tt in enumerate(sit) for t in tt])
 	else:
 		legal_term_set = set([(li,t) for li,t,f in d.get_tf_associations(test = association)])

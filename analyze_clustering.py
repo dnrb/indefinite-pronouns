@@ -196,7 +196,7 @@ def comparative_exp():
 	for onto_cat in ['thing', 'body']:
 		parameters_i = parameters + ['onto:%s' % onto_cat]
 		oix = sorted(set(np.where(d.ontological == onto_cat)[0]))
-		similarity_matrix = get_similarity_matrix(d, parameters_i, oix)
+		similarity_matrix = get_similarity_matrix(d, parameters_i, oix, association = 'associated')
 		for a,m,k in clustering_algos:
 			parameters_j = parameters_i + ['algo:%s' % a]
 			if m != None: parameters_j.append('method:%s' % m)
@@ -209,4 +209,3 @@ def comparative_exp():
 	
 if __name__ == "__main__":
 	comparative_exp()
-

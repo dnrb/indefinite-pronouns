@@ -140,7 +140,7 @@ class data:
 		self.token_index = np.array(self.token_index)
 		return
 
-	def create_oc_mds_files(self):
+	def create_oc_mds_files(self, association = 'None'):
 		"""
 		(data) -> None
 		
@@ -152,7 +152,13 @@ class data:
 		"""
 		
 		# frequency cut off is done in OC script
-		terms = set([(li,w) for d in self.data for li,dl in enumerate(d) for w in dl])
+		if association == 'None':
+			legal_term_set = set([(li,t) for sit,f in self.data 
+				for li,tt in enumerate(sit) for t in tt])
+		else:
+			legal_term_set = set([(li,t) for li,t,f in self.get_tf_associations(test = association)])
+		terms = set([(li,w) for d in self.data for li,dl in enumerate(d) 
+			for w in dl if (li,w) in legal_term_set])
 		term_dict = { k : v for v,k in enumerate(sorted(terms)) }
 		
 		# initialize lg_ixx (list of list of terms, with terms for each
@@ -165,7 +171,7 @@ class data:
 		
 		# populate M
 		for di,d in enumerate(self.data):
-			M[di,[term_dict[(ti,tt)] for ti,t in enumerate(d) for tt in t]] = 1
+			M[di,[term_dict[(li,t)] for li,tt in enumerate(d) for t in tt if (li,t) in terms]] = 1
 			for ti,t in enumerate(d):
 				if len(t) == 0:
 					M[di,lg_ixx[ti]] = 9

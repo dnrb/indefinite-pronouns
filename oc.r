@@ -64,15 +64,16 @@ data.a$annotation = original.data[selected.sits,]$annotation
 data.a$situations = paste(original.data[selected.sits,]$utt,
   original.data[selected.sits,]$word)
 
+flip = 1 - 2 * (onto != 'body')
 xlims = c(min(-data.a$dim.1),max(-data.a$dim.1))
-ylims = c(min(-data.a$dim.2),max(-data.a$dim.2))
+ylims = c(min(data.a$dim.2 * flip),max(data.a$dim.2 * flip))
 
 for (language in 2:31) {
   data.sub = data.a[data.a[,language] != '',]
   top = sort(table(data.sub[,language]), decreasing = TRUE)
   top.n = names(top[top > nrow(data.a)/100 * 2])#min_freq])
   data.subsub = droplevels(data.sub[data.sub[,language] %in% top.n,])
-  q = qplot(-dim.1, -dim.2, color = data.subsub[,language], label = data.subsub[,language], data = data.subsub, geom = 'text')
+  q = qplot(-dim.1, flip * dim.2, color = data.subsub[,language], label = data.subsub[,language], data = data.subsub, geom = 'text')
   q = q + xlim(xlims)
   q = q + ylim(ylims)
   q = q + theme(axis.title.x = element_blank(), axis.title.y = element_blank())
@@ -80,5 +81,5 @@ for (language in 2:31) {
   ggsave(sprintf('%s/%s_%s_L%d.pdf', folder, parameters, name, language), q, height = 5.5, width = 4)
 }
   
-q = qplot(-dim.1, -dim.2, color = annotation, label = annotation, size = 10, data = data.a, geom = 'text') + xlim(xlims) + ylim(ylims) + theme(axis.title.x = element_blank(), axis.title.y = element_blank()) + guides(color = (show=FALSE), size = (show= FALSE))
+q = qplot(-dim.1, flip * dim.2, color = annotation, label = annotation, size = 10, data = data.a, geom = 'text') + xlim(xlims) + ylim(ylims) + theme(axis.title.x = element_blank(), axis.title.y = element_blank()) + guides(color = (show=FALSE), size = (show= FALSE))
 ggsave(sprintf('%s/%s_%s_annotations.pdf', folder, parameters, name), q, height = 5, width = 3.6)

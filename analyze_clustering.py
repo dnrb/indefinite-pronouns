@@ -107,7 +107,7 @@ def write_cluster_assignments(cluster_assignments, parameters):
 	with open('clustering_%s.csv' % '_'.join(sorted(parameters)),'w') as fh:
 		fh.write('assignment\n%s' % '\n'.join([str(s) for s in cluster_assignments])) 
 
-def sim(d1,d2, parameters):
+def sim(d1,d2, parameters, legal_tf_set):
 	"""
 	(list of str, list of str, list of str) -> float
 	d1: list of str -- list of terms for each language used in a situation
@@ -122,7 +122,7 @@ def sim(d1,d2, parameters):
 		if ('EMPTY' in parameters or (len(e1) > 0 and len(e2) > 0))]
 	return (sum(comparisons)/len(comparisons)) if len(comparisons) > 0 else 0
 
-def get_similarity_matrix(d, parameters, oix):
+def get_similarity_matrix(d, parameters, oix, association = 'None'):
 	"""
 	(data, list of str, list of int) -> list of list of float
 	d: data -- data to construct similarity matrix from
@@ -130,17 +130,30 @@ def get_similarity_matrix(d, parameters, oix):
 	oix: list of int -- list of indices in data to consider (used to only
 			include situations corresponding to particular ontological
 			categories)
+	association = str -- {'None','associated','not dissociated'} parameter
+			for determining if a term and a function are allowed to enter in
+			the comparison of the similarity matrix (if not, the field will
+			be left blank)
 	
 	Returns a similarity matrix between the exemplars in d that are at
 	indices in oix in d.data.
 	"""
 	#
-	data_sub = d.data[oix]
+	if association == 'None':
+		legal_tf_set = set([(li,t,f) for sit,f in zip(d.data,d.annotation) 
+			for li,tt in enumerate(sit) for t in tt])
+	else:
+		legal_tf_set = d.get_tf_associations(test = association)
+	#
+	filtered_data = np.array([[[t for t in tt if (li,t,f) in legal_tf_set] 
+		for li,tt in enumerate(sit)] 
+		for sit,f in zip(d.data,d.annotation)])
+	data_sub = filtered_data[oix]
 	similarity_matrix = np.ones((data_sub.shape[0],data_sub.shape[0]))
 	for i,di in enumerate(data_sub):
 		for j,dj in enumerate(data_sub):
 			if j >= i: continue
-			similarity_matrix[i,j] = similarity_matrix[j,i] = sim(di, dj, parameters)
+			similarity_matrix[i,j] = similarity_matrix[j,i] = sim(di, dj, parameters, legal_tf_set)
 	return similarity_matrix
 
 def single_exp():

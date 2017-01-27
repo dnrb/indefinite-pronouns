@@ -14,7 +14,7 @@ fp <- sprintf('%s/%s.csv',folder, name)
 ##############
 # parameters #
 ##############
-onto = 'thing' # 'body'
+onto = 'thing ' # 'body'
 # ontological category to consider
 ndims = 2
 # number of dimensions in the OC analysis

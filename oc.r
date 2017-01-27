@@ -18,9 +18,9 @@ onto = 'thing' # 'body'
 # ontological category to consider
 ndims = 2
 # number of dimensions in the OC analysis
-min.terms = 5
+min.terms = 1
 # minimum number of positive terms a situation must have
-min.freq = 5
+min.freq = 1
 # minimum number of situations a term must be applicable to
 parameters = sprintf('onto=%s_dim=%d', onto, ndims)
 
@@ -78,8 +78,10 @@ for (language in 2:31) {
   q = q + ylim(ylims)
   q = q + theme(axis.title.x = element_blank(), axis.title.y = element_blank())
   q = q + guides(color = (show=FALSE), size = (show= FALSE))
-  ggsave(sprintf('%s/%s_%s_L%d.pdf', folder, parameters, name, language), q, height = 5.5, width = 4)
+  cairo_pdf(sprintf('%s/%s_%s_L%d.pdf', folder, parameters, name, language), height = 5, width = 5)
+  print(q)
+  dev.off()
 }
   
 q = qplot(-dim.1, flip * dim.2, color = annotation, label = annotation, size = 10, data = data.a, geom = 'text') + xlim(xlims) + ylim(ylims) + theme(axis.title.x = element_blank(), axis.title.y = element_blank()) + guides(color = (show=FALSE), size = (show= FALSE))
-ggsave(sprintf('%s/%s_%s_annotations.pdf', folder, parameters, name), q, height = 5, width = 3.6)
+ggsave(sprintf('%s/%s_%s_annotations.pdf', folder, parameters, name), q, height = 5, width = 5)

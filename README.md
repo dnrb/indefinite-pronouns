@@ -7,7 +7,7 @@ People                                                 |  Things
 
 English                                        |  Slovene
 :---------------------------------------------:|:---------------------------------------------:
-![](/graphs/onto=thing_dim=2_oc_SPLIT_L9.png)  |  ![](/graphs/onto=body_dim=2_oc_SPLIT_L26.png)
+![](/graphs/onto=thing_dim=2_oc_SPLIT_L9.png)  |  ![](/graphs/onto=thing_dim=2_oc_SPLIT_L26.png)
 
 Breakdown of scripts and how to use them by section of paper:
 

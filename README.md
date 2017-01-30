@@ -2,9 +2,8 @@
 Code and data for the CogSci 2017 conference paper on indefinite pronouns
 
 
-![](/graphs/onto=body_dim=2_oc_SPLIT_annotations.png "People") ![](/graphs/onto=thing_dim=2_oc_SPLIT_annotations.png "Things")
+![alt-text-1](/graphs/onto=body_dim=2_oc_SPLIT_annotations.png "People")![alt-text-2](/graphs/onto=thing_dim=2_oc_SPLIT_annotations.png "Things")
 
- ![image2]
 
 Breakdown of scripts and how to use them by section of paper:
 

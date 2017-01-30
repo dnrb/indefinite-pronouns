@@ -1,7 +1,11 @@
 # Something more about indefinite pronouns
 Code and data for the CogSci 2017 conference paper on indefinite pronouns
 
-<img src="/graphs/onto=body_dim=2_oc_SPLIT_annotations.png" label="People" width="425" /> <img src="/graphs/onto=thing_dim=2_oc_SPLIT_annotations.png" label="Things" width="425" />
+People                                                 |  Things
+:-----------------------------------------------------:|:-------------------------:
+![](/graphs/onto=body_dim=2_oc_SPLIT_annotations.png)  |  ![](/graphs/onto=body_dim=2_oc_SPLIT_annotations.png)
+
+ ![image2]
 
 Breakdown of scripts and how to use them by section of paper:
 

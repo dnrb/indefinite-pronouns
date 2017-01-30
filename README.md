@@ -1,6 +1,8 @@
 # Something more about indefinite pronouns
 Code and data for the CogSci 2017 conference paper on indefinite pronouns
 
+![alt tag](https://github.com/dnrb/indefinite-pronouns/blob/master/graphs/onto%3Dbody_dim%3D2_oc_SPLIT_annotations.pdf)
+
 Breakdown of scripts and how to use them by section of paper:
 
 * Method

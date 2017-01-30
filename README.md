@@ -2,10 +2,12 @@
 Code and data for the CogSci 2017 conference paper on indefinite pronouns
 
 People                                                 |  Things
-:-----------------------------------------------------:|:-------------------------:
-![](/graphs/onto=body_dim=2_oc_SPLIT_annotations.png)  |  ![](/graphs/onto=body_dim=2_oc_SPLIT_annotations.png)
+:-----------------------------------------------------:|:------------------------------------------------------:
+![](/graphs/onto=body_dim=2_oc_SPLIT_annotations.png)  |  ![](/graphs/onto=thing_dim=2_oc_SPLIT_annotations.png)
 
- ![image2]
+English                                        |  Slovene
+:---------------------------------------------:|:---------------------------------------------:
+![](/graphs/onto=thing_dim=2_oc_SPLIT_L9.png)  |  ![](/graphs/onto=body_dim=2_oc_SPLIT_L26.png)
 
 Breakdown of scripts and how to use them by section of paper:
 

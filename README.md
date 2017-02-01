@@ -1,14 +1,6 @@
 # Something more about indefinite pronouns
 Code and data for the CogSci 2017 conference paper on indefinite pronouns
 
-People                                                 |  Things
-:-----------------------------------------------------:|:------------------------------------------------------:
-![](/graphs/onto=body_dim=2_oc_SPLIT_annotations.png)  |  ![](/graphs/onto=thing_dim=2_oc_SPLIT_annotations.png)
-
-English                                        |  Slovene
-:---------------------------------------------:|:---------------------------------------------:
-![](/graphs/onto=thing_dim=2_oc_SPLIT_L9.png)  |  ![](/graphs/onto=thing_dim=2_oc_SPLIT_L26.png)
-
 Breakdown of scripts and how to use them by section of paper:
 
 * Method
@@ -25,10 +17,18 @@ Breakdown of scripts and how to use them by section of paper:
 * The perspective of a similarity space
 	- data.py
 		- usage: python data.py data/test_set.tsv data/stemming_dictionary.csv
-		- description: restructures data as input for oc.r, and writes them to files oc_SPLIT_labels.csv, oc_SPLIT_gold.csv, and oc_SPLIT.csv.
+		- description: restructures data as input for oc.r, and writes them to files oc_SPLIT_labels.csv, oc_SPLIT_gold.csv, and oc_SPLIT.csv. For plotting the development data, replace 'data/test_set.tsv' with 'data/dev_set.tsv'. 
 	- oc.r
 		- usage: Rscript oc.r
-		- description: Generates OCMDS plots based on info in oc_SPLIT_labels.csv, oc_SPLIT_gold.csv and oc_SPLIT.csv.
+		- description: Generates OC-MDS plots based on info in oc_SPLIT_test_labels.csv, oc_SPLIT_test_gold.csv and oc_test_SPLIT.csv. For plotting People instead of Things with the oc.r script, replace 'thing' on line 17 with 'body'.
+		
+People                                                 |  Things
+:-----------------------------------------------------:|:------------------------------------------------------:
+![](/plots/onto=body_dim=2_oc_SPLIT_test_annotations.png)  |  ![](/plots/onto=thing_dim=2_oc_SPLIT_test_annotations.png)
+
+English Things                                        |  Slovene Things
+:---------------------------------------------:|:---------------------------------------------:
+![](/plots/onto=thing_dim=2_oc_SPLIT_test_en.png)  |  ![](/plots/onto=thing_dim=2_oc_SPLIT_test_sl.png)
 
 Other scripts used in our research
 

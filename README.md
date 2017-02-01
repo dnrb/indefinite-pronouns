@@ -26,7 +26,7 @@ Breakdown of scripts and how to use them by section of paper:
 		- usage: Rscript oc.r
 		- description: Generates OC-MDS plots based on info in oc_SPLIT_test_labels.csv, oc_SPLIT_test_gold.csv and oc_test_SPLIT.csv. For plotting People instead of Things with the oc.r script, replace 'thing' on line 17 with 'body'.
 	
-Examples of plots
+Gallery of examples:
 
 People                                                 |  Things
 :-----------------------------------------------------:|:------------------------------------------------------:

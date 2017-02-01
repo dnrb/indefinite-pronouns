@@ -153,8 +153,8 @@ class data:
 		
 		# frequency cut off is done in OC script
 		if association == 'None':
-			legal_term_set = set([(li,t) for sit,f in self.data 
-				for li,tt in enumerate(sit) for t in tt])
+			legal_term_set = set([(li,t) for sit,f in enumerate(self.data)
+				for li,tt in enumerate(f) for t in tt])
 		else:
 			legal_term_set = set([(li,t) for li,t,f in self.get_tf_associations(test = association)])
 		terms = set([(li,w) for d in self.data for li,dl in enumerate(d) 

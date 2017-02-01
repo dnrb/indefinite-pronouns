@@ -29,15 +29,3 @@ People                                                 |  Things
 English Things                                        |  Slovene Things
 :---------------------------------------------:|:---------------------------------------------:
 ![](/plots/onto=thing_dim=2_oc_SPLIT_test_en.png)  |  ![](/plots/onto=thing_dim=2_oc_SPLIT_test_sl.png)
-
-Other scripts used in our research
-
-* Semantic maps
-
-	- graph_inferring.py
-		- usage: python graph_inferring.py
-		- dependencies: data.py, graph_parameters.py (see graph_parameters.py file to modify behavior)
-		- description: Infers a graph and writes it to files sample_edges.csv and sample_labels.csv, which are inputs for draw_regier_graph.R. It also prints a summary of how much each edge increased the angluin score.
-	- draw_regier_graph.R
-		- usage: Rscript draw_regier_graph.R
-		- description: Running this script creates file sample_graph.pdf from sample_edges.csv and sample_labels.csv. Before running this script, run graph_inferring.py.

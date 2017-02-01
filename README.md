@@ -36,9 +36,9 @@ English Things                                        |  Slovene Things
 :---------------------------------------------:|:---------------------------------------------:
 ![](/plots/onto=thing_dim=2_oc_SPLIT_test_en.png)  |  ![](/plots/onto=thing_dim=2_oc_SPLIT_test_sl.png)
 
-Russian Things                                        |  Vietnamese Things
+Russian Things                                        |  Indonesian Things
 :---------------------------------------------:|:---------------------------------------------:
-![](/plots/onto=thing_dim=2_oc_SPLIT_test_ru.png)  |  ![](/plots/onto=thing_dim=2_oc_SPLIT_test_vi.png)
+![](/plots/onto=thing_dim=2_oc_SPLIT_test_ru.png)  |  ![](/plots/onto=thing_dim=2_oc_SPLIT_test_id.png)
 
 German People                                        |  Croatian People
 :---------------------------------------------:|:---------------------------------------------:

@@ -33,3 +33,5 @@ People                                                 |  Things
 English Things                                        |  Slovene Things
 :---------------------------------------------:|:---------------------------------------------:
 ![](/plots/onto=thing_dim=2_oc_SPLIT_test_en.png)  |  ![](/plots/onto=thing_dim=2_oc_SPLIT_test_sl.png)
+
+	

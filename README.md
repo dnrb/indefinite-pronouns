@@ -3,11 +3,11 @@ Code and data for the CogSci 2017 conference paper on indefinite pronouns
 
 People                                                 |  Things
 :-----------------------------------------------------:|:------------------------------------------------------:
-![](/graphs/onto=body_dim=2_oc_SPLIT_annotations.png)  |  ![](/graphs/onto=thing_dim=2_oc_SPLIT_annotations.png)
+![](/plots/onto=body_dim=2_oc_SPLIT_test_annotations.png)  |  ![](/plots/onto=thing_dim=2_oc_SPLIT_test_annotations.png)
 
-English                                        |  Slovene
+English Things                                        |  Slovene Things
 :---------------------------------------------:|:---------------------------------------------:
-![](/graphs/onto=thing_dim=2_oc_SPLIT_L9.png)  |  ![](/graphs/onto=thing_dim=2_oc_SPLIT_L26.png)
+![](/plots/onto=thing_dim=2_oc_SPLIT_test_en.png)  |  ![](/plots/onto=thing_dim=2_oc_SPLIT_test_sl.png)
 
 Breakdown of scripts and how to use them by section of paper:
 

@@ -15,8 +15,8 @@ Breakdown of scripts and how to use them by section of paper:
 		- description: Prints a clustering summary for each parameter setting (see description of parameters in the class docstring for the data class in data.py). Each summary consists of the Adjusted Rand Score with the Haspelmath gold labels followed by a confusion matrix between Haspelmath functions and clusters found by the clustering algorithm.
 
 * The perspective of a similarity space
-	- data.py
-		- usage: python data.py data/test_set.tsv data/stemming_dictionary.csv
+	- create_oc_files.py
+		- usage: python create_oc_files.py data/test_set.tsv data/stemming_dictionary.csv
 		- description: restructures data as input for oc.r, and writes them to files oc_SPLIT_labels.csv, oc_SPLIT_gold.csv, and oc_SPLIT.csv. For plotting the development data, replace 'data/test_set.tsv' with 'data/dev_set.tsv'. 
 	- oc.r
 		- usage: Rscript oc.r

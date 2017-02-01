@@ -7,6 +7,10 @@ Breakdown of scripts and how to use them by section of paper:
 	- create_dev_test_split.py
 		- usage: python create_dev_test_split.py
 		- description: Splits exemplars in data/full_set.csv into a dev_set and test_set of equal sizes and writes them to data/dev_set.tsv and data/test_set.csv.
+		
+* Are all semantic functions equally important
+	- function_frequency.r
+		- run in an R environment to get the data for Table 2
 
 * Are the functions at the right level of granularity?
 	- analyze_clustering.py

@@ -43,12 +43,12 @@ min.sits = (1/nrow(data)) * min.freq
 #############
 # actual OC #
 #############
-#result = oc(hr, dims=ndims, minvotes= min.terms,
-#  lop= min.sits, polarity = 1:ndims, verbose = TRUE)
-#df = data.frame(result$legislators[,7], row.names = 1:nrow(result$legislators))
-#colnames(df) = c('dim.1')
-#for (i in 1:ndims-1) { df[[sprintf('dim.%d',i+1)]] = result$legislators[,7+i] }
-#write.csv(df, sprintf('%s/%s_%s.csv', folder, name, parameters))
+result = oc(hr, dims=ndims, minvotes= min.terms,
+  lop= min.sits, polarity = 1:ndims, verbose = TRUE)
+df = data.frame(result$legislators[,7], row.names = 1:nrow(result$legislators))
+colnames(df) = c('dim.1')
+for (i in 1:ndims-1) { df[[sprintf('dim.%d',i+1)]] = result$legislators[,7+i] }
+write.csv(df, sprintf('%s/%s_%s.csv', folder, name, parameters))
 
 ###############
 # plot resuls #
@@ -69,18 +69,18 @@ flip = 1 - 2 * (onto != 'body')
 xlims = c(min(-data.a$dim.1),max(-data.a$dim.1))
 ylims = c(min(data.a$dim.2 * flip),max(data.a$dim.2 * flip))
 
-
+library(Cairo)
 for (language in 2:31) {
   data.sub = data.a[data.a[,language] != '',]
   top = sort(table(data.sub[,language]), decreasing = TRUE)
   top.n = names(top[top > nrow(data.a)/100 * 2])#min_freq])
   data.subsub = droplevels(data.sub[data.sub[,language] %in% top.n,])
-  q = qplot(-dim.1, flip * dim.2, color = data.subsub[,language], label = data.subsub[,language], data = data.subsub, geom = 'text')
+  q = qplot(-dim.1, flip * dim.2, color = data.subsub[,language], label = data.subsub[,language], size = 40, data = data.subsub, geom = 'text')
   q = q + xlim(xlims)
   q = q + ylim(ylims)
   q = q + theme(axis.title.x = element_blank(), axis.title.y = element_blank())
   q = q + guides(color = (show=FALSE), size = (show= FALSE))
-  cairo_pdf(sprintf('%s/%s_%s_%s.pdf', folder, parameters, name, language.labs[language-1]), height = 4, width = 4)
+  CairoPNG(sprintf('%s/plots/%s_%s_%s.png', folder, parameters, name, language.labs[language-1]), height = 600, width = 600)
   print(q)
   dev.off()
 }
@@ -107,7 +107,7 @@ q = qplot(-dim.1, flip * dim.2, color = annotation, label = annotation, size = 1
 q = q + theme(axis.title.x = element_blank(), axis.title.y = element_blank()) 
 q = q + guides(size = (show= FALSE), col = (show=FALSE))
 q = q + sb
-ggsave(sprintf('%s/%s_%s_annotations.pdf', folder, parameters, name), q, height = 6, width = 6)
+ggsave(sprintf('%s/plots/%s_%s_annotations.png', folder, parameters, name), q, height = 6, width = 6)
 
 ####
 # for the DN gradient for people
@@ -125,7 +125,7 @@ for (language in 2:31) {
   q = q + ylim(ylims)
   q = q + theme(axis.title.x = element_blank(), axis.title.y = element_blank())
   q = q + guides(color = (show=FALSE), size = (show= FALSE))
-  cairo_pdf(sprintf('%s/%s_%s_%s_%s.pdf', folder, FN, parameters, name, language.labs[language-1]), height = 6, width = 2)
+  cairo_pdf(sprintf('%s/plots/%s_%s_%s_%s.png', folder, FN, parameters, name, language.labs[language-1]), height = 6, width = 2)
   print(q)
   dev.off()
 }

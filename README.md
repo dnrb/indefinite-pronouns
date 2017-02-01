@@ -25,7 +25,9 @@ Breakdown of scripts and how to use them by section of paper:
 	- oc.r
 		- usage: Rscript oc.r
 		- description: Generates OC-MDS plots based on info in oc_SPLIT_test_labels.csv, oc_SPLIT_test_gold.csv and oc_test_SPLIT.csv. For plotting People instead of Things with the oc.r script, replace 'thing' on line 17 with 'body'.
-		
+	
+Examples of plots
+
 People                                                 |  Things
 :-----------------------------------------------------:|:------------------------------------------------------:
 ![](/plots/onto=body_dim=2_oc_SPLIT_test_annotations.png)  |  ![](/plots/onto=thing_dim=2_oc_SPLIT_test_annotations.png)
@@ -33,5 +35,17 @@ People                                                 |  Things
 English Things                                        |  Slovene Things
 :---------------------------------------------:|:---------------------------------------------:
 ![](/plots/onto=thing_dim=2_oc_SPLIT_test_en.png)  |  ![](/plots/onto=thing_dim=2_oc_SPLIT_test_sl.png)
+
+Russian Things                                        |  Vietnamese Things
+:---------------------------------------------:|:---------------------------------------------:
+![](/plots/onto=thing_dim=2_oc_SPLIT_test_ru.png)  |  ![](/plots/onto=thing_dim=2_oc_SPLIT_test_vi.png)
+
+German People                                        |  Croatian People
+:---------------------------------------------:|:---------------------------------------------:
+![](/plots/onto=body_dim=2_oc_SPLIT_test_de.png)  |  ![](/plots/onto=body_dim=2_oc_SPLIT_test_hr.png)
+
+English People                                        |  Turkish People
+:---------------------------------------------:|:---------------------------------------------:
+![](/plots/onto=body_dim=2_oc_SPLIT_test_en.png)  |  ![](/plots/onto=body_dim=2_oc_SPLIT_test_tr.png)
 
 	

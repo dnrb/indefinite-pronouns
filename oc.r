@@ -7,14 +7,14 @@ library(ggplot2)
 language.labs = c('ar','bg','bs','cz','da','de','el','en','es','et','fi',
   'fr', 'he', 'hr', 'hu', 'id', 'it', 'ja', 'nl', 'no', 'pl', 'pr', 'ro',
   'ru', 'sl','sr','sv','tr','vi','zh')
-name <- 'oc_SPLIT'
+name <- 'oc_SPLIT_test'
 folder <- '.'
 fp <- sprintf('%s/%s.csv',folder, name)
 
 ##############
 # parameters #
 ##############
-onto = 'thing ' # 'body'
+onto = 'thing' # 'body'
 # ontological category to consider
 ndims = 2
 # number of dimensions in the OC analysis
@@ -43,12 +43,12 @@ min.sits = (1/nrow(data)) * min.freq
 #############
 # actual OC #
 #############
-result = oc(hr, dims=ndims, minvotes= min.terms,
-  lop= min.sits, polarity = 1:ndims, verbose = TRUE)
-df = data.frame(result$legislators[,7], row.names = 1:nrow(result$legislators))
-colnames(df) = c('dim.1')
-for (i in 1:ndims-1) { df[[sprintf('dim.%d',i+1)]] = result$legislators[,7+i] }
-write.csv(df, sprintf('%s/%s_%s.csv', folder, name, parameters))
+#result = oc(hr, dims=ndims, minvotes= min.terms,
+#  lop= min.sits, polarity = 1:ndims, verbose = TRUE)
+#df = data.frame(result$legislators[,7], row.names = 1:nrow(result$legislators))
+#colnames(df) = c('dim.1')
+#for (i in 1:ndims-1) { df[[sprintf('dim.%d',i+1)]] = result$legislators[,7+i] }
+#write.csv(df, sprintf('%s/%s_%s.csv', folder, name, parameters))
 
 ###############
 # plot resuls #
@@ -63,10 +63,12 @@ data.a$dim.2 = coordinates$dim.2
 data.a$annotation = original.data[selected.sits,]$annotation
 data.a$situations = paste(original.data[selected.sits,]$utt,
   original.data[selected.sits,]$word)
+data.a = droplevels(data.a[data.a$annotation != 'UF',])
 
 flip = 1 - 2 * (onto != 'body')
 xlims = c(min(-data.a$dim.1),max(-data.a$dim.1))
 ylims = c(min(data.a$dim.2 * flip),max(data.a$dim.2 * flip))
+
 
 for (language in 2:31) {
   data.sub = data.a[data.a[,language] != '',]
@@ -78,10 +80,52 @@ for (language in 2:31) {
   q = q + ylim(ylims)
   q = q + theme(axis.title.x = element_blank(), axis.title.y = element_blank())
   q = q + guides(color = (show=FALSE), size = (show= FALSE))
-  cairo_pdf(sprintf('%s/%s_%s_L%d.pdf', folder, parameters, name, language), height = 5, width = 5)
+  cairo_pdf(sprintf('%s/%s_%s_%s.pdf', folder, parameters, name, language.labs[language-1]), height = 4, width = 4)
   print(q)
   dev.off()
 }
-  
-q = qplot(-dim.1, flip * dim.2, color = annotation, label = annotation, size = 10, data = data.a, geom = 'text') + xlim(xlims) + ylim(ylims) + theme(axis.title.x = element_blank(), axis.title.y = element_blank()) + guides(color = (show=FALSE), size = (show= FALSE))
-ggsave(sprintf('%s/%s_%s_annotations.pdf', folder, parameters, name), q, height = 5, width = 5)
+
+
+library(RColorBrewer)
+my.cols <- function(n) {
+  black <- "#000000"
+  if (n <= 9) {
+    c(black,brewer.pal(n-1, "Dark2"))
+  } else {
+    c(black,hcl(h=seq(0,(n-2)/(n-1),
+                  length=n-1)*360,c=100,l=20,fixup=TRUE))
+  }
+}
+ 
+myColors = my.cols(8)
+names(myColors) = levels(original.data$annotation)[0:8]
+sb= scale_colour_manual(name = 'annotation', values = myColors)
+
+#sb = scale_colour_brewer(name = levels(original.data$annotation), palette = "Dark2")
+
+q = qplot(-dim.1, flip * dim.2, color = annotation, label = annotation, size = 1, data = data.a, geom = 'text') 
+q = q + theme(axis.title.x = element_blank(), axis.title.y = element_blank()) 
+q = q + guides(size = (show= FALSE), col = (show=FALSE))
+q = q + sb
+ggsave(sprintf('%s/%s_%s_annotations.pdf', folder, parameters, name), q, height = 6, width = 6)
+
+####
+# for the DN gradient for people
+####
+FN = 'DN'
+xlims = c(min(-data.a[data.a$annotation == FN,]$dim.1)-0.3,max(-data.a[data.a$annotation == FN,]$dim.1)+0.3)
+ylims = c(min(flip * data.a[data.a$annotation == FN,]$dim.2)-0.1,max(flip * data.a[data.a$annotation == FN,]$dim.2) + 0.1)
+for (language in 2:31) {
+  data.sub = data.a[data.a[,language] != '' & data.a$annotation == FN,]
+  top = sort(table(data.sub[,language]), decreasing = TRUE)
+  top.n = names(top[top > 2])#min_freq])
+  data.subsub = droplevels(data.sub[data.sub[,language] %in% top.n,])
+  q = qplot(-dim.1, flip * dim.2, color = data.subsub[,language], label = data.subsub[,language], size = 20, data = data.subsub, geom = 'text')
+  q = q + xlim(xlims)
+  q = q + ylim(ylims)
+  q = q + theme(axis.title.x = element_blank(), axis.title.y = element_blank())
+  q = q + guides(color = (show=FALSE), size = (show= FALSE))
+  cairo_pdf(sprintf('%s/%s_%s_%s_%s.pdf', folder, FN, parameters, name, language.labs[language-1]), height = 6, width = 2)
+  print(q)
+  dev.off()
+}

@@ -17,11 +17,10 @@ Breakdown of scripts and how to use them by section of paper:
 * The perspective of a similarity space
 	- data.py
 		- usage: python data.py data/test_set.tsv data/stemming_dictionary.csv
-		- description: restructures data as input for oc.r, and writes them to files oc_SPLIT_labels.csv, oc_SPLIT_gold.csv, and oc_SPLIT.csv.
+		- description: restructures data as input for oc.r, and writes them to files oc_SPLIT_labels.csv, oc_SPLIT_gold.csv, and oc_SPLIT.csv. For plotting the development data, replace 'data/test_set.tsv' with 'data/dev_set.tsv'. 
 	- oc.r
 		- usage: Rscript oc.r
-		- description: Generates OC-MDS plots based on info in oc_SPLIT_test_labels.csv, oc_SPLIT_test_gold.csv and oc_test_SPLIT.csv.
-( for plotting the development data, replace 'data/test_set.tsv' with 'data/dev_set.tsv', for plotting People instead of Things with the oc.r script, replace 'thing' on line 17 with 'body' )
+		- description: Generates OC-MDS plots based on info in oc_SPLIT_test_labels.csv, oc_SPLIT_test_gold.csv and oc_test_SPLIT.csv. For plotting People instead of Things with the oc.r script, replace 'thing' on line 17 with 'body'.
 		
 People                                                 |  Things
 :-----------------------------------------------------:|:------------------------------------------------------:

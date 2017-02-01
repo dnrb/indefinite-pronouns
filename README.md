@@ -1,14 +1,6 @@
 # Something more about indefinite pronouns
 Code and data for the CogSci 2017 conference paper on indefinite pronouns
 
-People                                                 |  Things
-:-----------------------------------------------------:|:------------------------------------------------------:
-![](/plots/onto=body_dim=2_oc_SPLIT_test_annotations.png)  |  ![](/plots/onto=thing_dim=2_oc_SPLIT_test_annotations.png)
-
-English Things                                        |  Slovene Things
-:---------------------------------------------:|:---------------------------------------------:
-![](/plots/onto=thing_dim=2_oc_SPLIT_test_en.png)  |  ![](/plots/onto=thing_dim=2_oc_SPLIT_test_sl.png)
-
 Breakdown of scripts and how to use them by section of paper:
 
 * Method
@@ -28,7 +20,16 @@ Breakdown of scripts and how to use them by section of paper:
 		- description: restructures data as input for oc.r, and writes them to files oc_SPLIT_labels.csv, oc_SPLIT_gold.csv, and oc_SPLIT.csv.
 	- oc.r
 		- usage: Rscript oc.r
-		- description: Generates OCMDS plots based on info in oc_SPLIT_labels.csv, oc_SPLIT_gold.csv and oc_SPLIT.csv.
+		- description: Generates OC-MDS plots based on info in oc_SPLIT_test_labels.csv, oc_SPLIT_test_gold.csv and oc_test_SPLIT.csv.
+( for plotting the development data, replace 'data/test_set.tsv' with 'data/dev_set.tsv', for plotting People instead of Things with the oc.r script, replace 'thing' on line 17 with 'body' )
+		
+People                                                 |  Things
+:-----------------------------------------------------:|:------------------------------------------------------:
+![](/plots/onto=body_dim=2_oc_SPLIT_test_annotations.png)  |  ![](/plots/onto=thing_dim=2_oc_SPLIT_test_annotations.png)
+
+English Things                                        |  Slovene Things
+:---------------------------------------------:|:---------------------------------------------:
+![](/plots/onto=thing_dim=2_oc_SPLIT_test_en.png)  |  ![](/plots/onto=thing_dim=2_oc_SPLIT_test_sl.png)
 
 Other scripts used in our research
 
